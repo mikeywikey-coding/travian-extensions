@@ -1,5 +1,9 @@
 # Changelog
 
+## Night Mode 2.4 — 2026-10-04
+
+- Darkened the alliance "Contribute resources" header and box outline.
+
 ## Night Mode 2.3 — 2026-10-04
 
 - Darkened the alliance bonus section headers and the box outlines.

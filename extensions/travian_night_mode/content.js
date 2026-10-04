@@ -1219,6 +1219,7 @@ div.a2b table#troops td {
 }
 
 /* Alliance bonus section headers: light green-to-white gradient natively */
+#contributionBox,
 #allianceBonusOverview .bonusBox {
   border-color: var(--nm-border) !important;
 }
@@ -1226,6 +1227,11 @@ div.a2b table#troops td {
 #allianceBonusOverview .bonusBox > h4 {
   background: linear-gradient(to right, var(--nm-green-hdr), var(--nm-card)) !important;
   color: var(--nm-gray) !important;
+}
+
+#contributionBox > h4 {
+  background: linear-gradient(to right, var(--nm-green-hdr), var(--nm-card)) !important;
+  color: var(--nm-white) !important;
 }
 
 #allianceBonusOverview .bonusBox > h4 strong {
