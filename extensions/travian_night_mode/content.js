@@ -1189,10 +1189,6 @@ button.textButtonV1.gold.disabled, button.textButtonV1.gold:disabled { color: va
   color: var(--nm-white) !important;
 }
 
-#bonusBox0 > h4 {
-  background-color: var(--nm-base) !important;
-}
-
 /* Waterworks "Bonus level" node (Annexed oasis flow diagram) keeps its
    native near-white background while night mode lightens the text, leaving
    a glaring white box. Match it to the dark surface. */
@@ -1220,6 +1216,20 @@ div.a2b table#troops td {
 
 #contributionBox {
   background-color: var(--nm-base) !important;
+}
+
+/* Alliance bonus section headers: light green-to-white gradient natively */
+#allianceBonusOverview .bonusBox {
+  border-color: var(--nm-border) !important;
+}
+
+#allianceBonusOverview .bonusBox > h4 {
+  background: linear-gradient(to right, var(--nm-green-hdr), var(--nm-card)) !important;
+  color: var(--nm-gray) !important;
+}
+
+#allianceBonusOverview .bonusBox > h4 strong {
+  color: var(--nm-white) !important;
 }
 
 /* Alliance bonus bars. Every level marker in the game's sprite sits on an

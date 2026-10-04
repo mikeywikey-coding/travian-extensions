@@ -1,5 +1,9 @@
 # Changelog
 
+## Night Mode 2.3 — 2026-10-04
+
+- Darkened the alliance bonus section headers and the box outlines.
+
 ## Night Mode 2.2 — 2026-10-04
 
 - Redrew the alliance bonus level markers as rings on the dark track for every state: unreached, reached, complete, inactive and upgrading. In 2.1 they still showed grey boxes.

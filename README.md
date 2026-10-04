@@ -23,7 +23,7 @@ Screenshots use sample data. Unofficial project, unaffiliated with Travian Games
 | [CP Predictor](#cp-predictor) | 2.3 | Estimates when you will reach the next settlement's culture-point requirement | `extensions/NextSettlementCalc` |
 | [NPC AutoMerchant](#npc-automerchant) | 3.1.0 | Calculates troop resource needs and helps prepare hero resource transfers | `extensions/automerchant` |
 | [InactiveSearch Map Opener](#inactivesearch-map-opener) | 5.1 | Collects filtered inactive targets across pages and opens their Travian map tabs | `extensions/inactiveOpenerV3` |
-| [Night Mode](#night-mode) | 2.2 | Darkens Travian and adds a button-color picker with saved favorites | `extensions/travian_night_mode` |
+| [Night Mode](#night-mode) | 2.3 | Darkens Travian and adds a button-color picker with saved favorites | `extensions/travian_night_mode` |
 
 ## Install in Brave, Chrome, or Edge
 
