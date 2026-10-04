@@ -4,7 +4,7 @@ Eight independent browser extensions for Travian: find oases, manage farm-list s
 
 **Community beta · Install only the extensions you want · Discord support: `luckimikey`**
 
-![Oasis Finder interface with sample targets](docs/images/oasis-finder.png)
+<a href="docs/images/oasis-finder.png"><img src="docs/images/oasis-finder.png" alt="Oasis Finder interface with sample targets" width="280" /></a>
 
 These are the current versions used by the maintainer in Brave. They are shared for players to try and give feedback. The screenshots show the real extension interfaces with **sample data**; they do not show a live account. This is an unofficial project, unaffiliated with Travian Games.
 
@@ -47,7 +47,7 @@ Download the new version, replace the files in the **same installed folder**, an
 
 ## Oasis Finder
 
-![Oasis Finder hero view](docs/images/oasis-finder.png)
+<a href="docs/images/oasis-finder.png"><img src="docs/images/oasis-finder.png" alt="Oasis Finder hero view" width="280" /></a>
 
 **Features:** draggable, collapsible map panel; Discovery and Update modes; scan-coverage meter and local oasis database; observation-age labels; Hero and Troops views; hero-stat fetch and adjustments; troop counts and smithy levels; optional hero inclusion; troop preview and maximum troop cap; five risk levels; sorting by best score, net resources, resources/minute, distance, or resources/HP; compact/normal/detail layouts; database and error viewers. The native farm list also sorts same-named oasis targets by bonus type, then by distance within each type.
 
@@ -62,11 +62,11 @@ Download the new version, replace the files in the **same installed folder**, an
 
 Use **View DB** to inspect stored targets and **Errors** when a scan looks incomplete. **Clear DB** removes the local oasis cache, so expect to discover the area again afterward.
 
-![Oasis Finder troop view](docs/images/oasis-troops.png)
+<a href="docs/images/oasis-troops.png"><img src="docs/images/oasis-troops.png" alt="Oasis Finder troop view" width="280" /></a>
 
 ## TravAlarm / Watchman
 
-![Watchman grouped timer dashboard](docs/images/watchman.png)
+<a href="docs/images/watchman.png"><img src="docs/images/watchman.png" alt="Watchman grouped timer dashboard" width="224" /></a>
 
 **Features:** floating timer dashboard with category rings and village colors; discovered attack, hero, construction, training, storage, celebration, and farm-list timers; custom reminders; reusable presets including recurring/daily modes; countdowns and completed states; pinning, deletion, collapse/minimize controls; category-specific sound controls and volume; browser alarms and notifications.
 
@@ -82,7 +82,7 @@ The village-navigation fix in this package keeps ordinary menu clicks from being
 
 ## Travian QoL
 
-![Travian QoL feature controls](docs/images/qol-settings.png)
+<a href="docs/images/qol-settings.png"><img src="docs/images/qol-settings.png" alt="Travian QoL feature controls" width="520" /></a>
 
 Click the toolbar icon for settings, or open the extension's **Options** page for a larger view. Features are enabled by default and individually toggleable. **Hot-toggle** features can be changed live; **On refresh** features need a page refresh. Loot Calculator, Skip Ads, and Counter-attack have their own settings tabs.
 
@@ -99,13 +99,13 @@ Click the toolbar icon for settings, or open the extension's **Options** page fo
 | Skip builder-bonus ads | Enable the feature and use the game's builder-bonus video flow. It mutes/skips supported ad players; timing controls are under **Skip Ads**. Ad providers can change, so report unsupported playback. |
 | Counter-attack calculator | Open **Counter-attack** in Options, enter coordinates, troop speed, server speed, relevant bonuses, and attack timings to plan return/interception times. Check these inputs against the game before acting. |
 
-![Right-click menu for selected farm-list targets](docs/images/farm-selection.png)
+<a href="docs/images/farm-selection.png"><img src="docs/images/farm-selection.png" alt="Right-click menu for selected farm-list targets" width="420" /></a>
 
 The farm-list screenshot uses a sample table around the real extension's selection highlight and menu. The in-game table's appearance varies by theme and game version.
 
 ## Rank Tracker
 
-![Rank Tracker current statistics](docs/images/rank-tracker.png)
+<a href="docs/images/rank-tracker.png"><img src="docs/images/rank-tracker.png" alt="Rank Tracker current statistics" width="520" /></a>
 
 **Features:** weekly Top 10 and general rankings; population, resource production, culture points, attack/defense, and raid/PvE statistics; colored percentile rank tiers; deltas against earlier observations; average general rank; interactive history graphs; raw observations or daily peaks; absolute values or hourly velocity; dataset groups, visibility controls, zoom and point comparisons; multiple remembered servers; JSON export/import.
 
@@ -119,11 +119,11 @@ The farm-list screenshot uses a sample table around the real extension's selecti
 
 If you see a session-expired message or a gap in the chart, log back into that server and reopen the popup. The tracker cannot reconstruct observations that were never recorded.
 
-![Rank Tracker history graph](docs/images/rank-history.png)
+<a href="docs/images/rank-history.png"><img src="docs/images/rank-history.png" alt="Rank Tracker history graph" width="520" /></a>
 
 ## CP Predictor
 
-![CP Planner forecast and celebration controls](docs/images/cp-planner.png)
+<a href="docs/images/cp-planner.png"><img src="docs/images/cp-planner.png" alt="CP Planner forecast and celebration controls" width="300" /></a>
 
 **Features:** measured CP total/daily production; selectable settlement threshold; estimated ETA; per-village Town Hall levels and small/large celebration plans; current celebration cooldowns; repeated planned celebration queues; passive-growth projection when sufficient observations exist; baseline forecast; readiness alarm/mute; remembered servers; refresh and forecast-log export.
 
@@ -139,7 +139,7 @@ The popup and background refresh roughly every five minutes. Failed refreshes re
 
 ## NPC AutoMerchant
 
-![NPC troop calculator panel](docs/images/npc-calculator.png)
+<a href="docs/images/npc-calculator.png"><img src="docs/images/npc-calculator.png" alt="NPC troop calculator panel" width="320" /></a>
 
 Despite the historical name, the current NPC panel centers on **Troop Calc**. It is not a general scheduled merchant-route tool.
 
@@ -157,7 +157,7 @@ It does not need your password or a separate login. The old Needs/Ratio tab inst
 
 ## InactiveSearch Map Opener
 
-![InactiveSearch Map Opener controls](docs/images/inactive-opener.png)
+<a href="docs/images/inactive-opener.png"><img src="docs/images/inactive-opener.png" alt="InactiveSearch Map Opener controls" width="280" /></a>
 
 **Features:** floating controls on InactiveSearch; local population sorting in either direction; collection across filtered result pages (up to 100 pages); addition to InactiveSearch's saved farmlist; queued Travian map-tab opening; background/foreground preference; Stop control and progress status.
 
@@ -172,7 +172,7 @@ Adding to the **InactiveSearch** farmlist does not create or populate a native T
 
 ## Night Mode
 
-![Night Mode toggle, button-color picker, and favorites](docs/images/night-mode.png)
+<a href="docs/images/night-mode.png"><img src="docs/images/night-mode.png" alt="Night Mode toggle, button-color picker, and favorites" width="224" /></a>
 
 **Features:** dark theme for game pages, dialogs, and common controls; enabled by default; instant toolbar toggle; custom button-color picker with hex entry; up to twelve saved favorites; live color preview and reset to the game's native button colors.
 
