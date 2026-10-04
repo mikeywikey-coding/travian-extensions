@@ -4,6 +4,10 @@ Eight standalone browser extensions for Travian.
 
 **Community beta · Discord: `luckimikey`**
 
+## Disclaimer
+
+Use these extensions at your own risk. I am not liable for any bans or account penalties resulting from their use. I have tested them for several months without issues, but this does not guarantee that you will avoid a ban.
+
 <a href="docs/images/oasis-finder.png"><img src="docs/images/oasis-finder.png" alt="Oasis Finder interface with sample targets" width="280" /></a>
 
 Screenshots use sample data. Unofficial project, unaffiliated with Travian Games.
