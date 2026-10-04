@@ -1348,7 +1348,7 @@ function togglePanel(panelId) {
 
 const WIDGET_HTML = `
     <div class="tw-titlebar">
-        <span class="tw-title">Watchman</span>
+        <span class="tw-title">TravAlarm</span>
         <span class="tw-alarm-count" id="_tw-cnt">0</span>
         <div class="tw-titlebar-actions">
             <button id="_tw-mb" class="tw-icon-btn" title="Minimize">

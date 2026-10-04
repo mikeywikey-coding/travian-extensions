@@ -2,7 +2,7 @@
 
 Version 3.25.
 
-[Features and usage guide](../../README.md#travalarm--watchman) · [Installation](../../README.md#install-in-brave-chrome-or-edge)
+[Features and usage guide](../../README.md#travalarm) · [Installation](../../README.md#install-in-brave-chrome-or-edge)
 
 Load this folder directly with **Load unpacked**. No build step is required.
 

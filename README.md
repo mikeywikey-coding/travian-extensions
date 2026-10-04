@@ -13,7 +13,7 @@ These are the current versions used by the maintainer in Brave. They are shared 
 | Extension | Version | What it does | Load this folder |
 | --- | --- | --- | --- |
 | [Oasis Finder](#oasis-finder) | 69.3 | Scores nearby oases for hero and troop raids; improves oasis farm-list sorting | `extensions/OasisCalc` |
-| [TravAlarm / Watchman](#travalarm--watchman) | 3.25 | Groups game timers and custom reminders in a floating dashboard | `extensions/travAlarm` |
+| [TravAlarm](#travalarm) | 3.25 | Groups game timers and custom reminders in a floating dashboard | `extensions/travAlarm` |
 | [Travian QoL](#travian-qol) | 1.0 | Farm-list selection, bulk tab opening, report tools, loot calculator, to-do list, and more | `extensions/TravianQoL` |
 | [Rank Tracker](#rank-tracker) | 4.8.0 | Records statistics and shows rankings, deltas, and history graphs | `extensions/TravianRankTracker` |
 | [CP Predictor](#cp-predictor) | 2.3 | Estimates when you will reach the next settlement's culture-point requirement | `extensions/NextSettlementCalc` |
@@ -33,13 +33,13 @@ No build tools or paid extension subscription are needed. Features that depend o
 3. Turn on **Developer mode**.
 4. Click **Load unpacked** and select **one extension's folder** from the table above. Select the folder that contains that extension's `manifest.json`, not the repository root.
 5. Repeat for any other extensions you want, then refresh your open Travian tabs.
-6. Pin extensions with popups to your toolbar. Oasis Finder, Watchman, NPC AutoMerchant, and InactiveSearch instead add controls directly to their matching pages.
+6. Pin extensions with popups to your toolbar. Oasis Finder, TravAlarm, NPC AutoMerchant, and InactiveSearch instead add controls directly to their matching pages.
 
 Start with Night Mode and QoL if you want a quick introduction, then add the other tools as you need them. Each extension can be disabled separately. Avoid running older copies of the same tool alongside these versions.
 
 **Browser support:** these packages target desktop Chromium browsers. Brave is the maintainer's current browser; Chrome and Edge compatibility still needs community feedback. Firefox installation is not documented for this release.
 
-**Server support:** Oasis Finder, Watchman, CP Predictor, and NPC AutoMerchant currently target `*.travian.com`. Rank Tracker additionally matches `.org`, `.net`, `.us`, and `.de`. QoL and Night Mode match several regional domains; their manifests contain the complete lists. InactiveSearch Map Opener runs on `inactivesearch.com` and `inactivesearch.it`. A similar-looking unsupported domain will not receive the interface.
+**Server support:** Oasis Finder, TravAlarm, CP Predictor, and NPC AutoMerchant currently target `*.travian.com`. Rank Tracker additionally matches `.org`, `.net`, `.us`, and `.de`. QoL and Night Mode match several regional domains; their manifests contain the complete lists. InactiveSearch Map Opener runs on `inactivesearch.com` and `inactivesearch.it`. A similar-looking unsupported domain will not receive the interface.
 
 ### Updating and keeping your settings
 
@@ -64,15 +64,15 @@ Use **View DB** to inspect stored targets and **Errors** when a scan looks incom
 
 <a href="docs/images/oasis-troops.png"><img src="docs/images/oasis-troops.png" alt="Oasis Finder troop view" width="280" /></a>
 
-## TravAlarm / Watchman
+## TravAlarm
 
-<a href="docs/images/watchman.png"><img src="docs/images/watchman.png" alt="Watchman grouped timer dashboard" width="224" /></a>
+<a href="docs/images/travalarm.png"><img src="docs/images/travalarm.png" alt="TravAlarm grouped timer dashboard" width="224" /></a>
 
 **Features:** floating timer dashboard with category rings and village colors; discovered attack, hero, construction, training, storage, celebration, and farm-list timers; custom reminders; reusable presets including recurring/daily modes; countdowns and completed states; pinning, deletion, collapse/minimize controls; category-specific sound controls and volume; browser alarms and notifications.
 
 **Use it effectively:**
 
-1. Open Travian and find the **Watchman** panel. Visit relevant game pages so the extension can read the timers and village data it needs. Timers depend on available page/server information.
+1. Open Travian and find the **TravAlarm** panel. Visit relevant game pages so the extension can read the timers and village data it needs. Timers depend on available page/server information.
 2. Expand a category to see its individual alarms; use the village label/color to tell villages apart. Move or minimize the panel if it covers a game control.
 3. Click **Add** for a manual reminder. A plain number means minutes: `15` is fifteen minutes; `1:30` is one minute thirty seconds; `0:45:00` is forty-five minutes. A clock time such as `10pm` schedules the next occurrence of that time on your computer's clock.
 4. Use **Presets** for reminders you repeatedly create, and the timer controls to pin or dismiss items. Open **Sound Settings** to choose useful categories and set volume.
@@ -187,7 +187,7 @@ Adding to the **InactiveSearch** farmlist does not create or populate a native T
 
 Preferences, timers, histories, and caches are stored in the browser's extension storage; some helpers also use page local/session storage for village context and transfer state. QoL feature toggles use browser sync storage when sync is available. There is no project-operated account, subscription backend, or analytics service in this package.
 
-Tools that refresh game statistics use your existing logged-in game session. InactiveSearch interacts with that site's results/farmlist. QoL and Watchman can open tabs or show notifications, and AutoMerchant can prepare resource transfers. Some interface styles load Google Fonts, and Night Mode references a Travian-hosted button asset. Browser permissions differ by extension; inspect each `manifest.json` and install only what you want.
+Tools that refresh game statistics use your existing logged-in game session. InactiveSearch interacts with that site's results/farmlist. QoL and TravAlarm can open tabs or show notifications, and AutoMerchant can prepare resource transfers. Some interface styles load Google Fonts, and Night Mode references a Travian-hosted button asset. Browser permissions differ by extension; inspect each `manifest.json` and install only what you want.
 
 ## Troubleshooting and feedback
 

@@ -9,7 +9,7 @@ I've shared the eight Travian extensions I currently use and would love some peo
 https://github.com/mikeywikey-coding/travian-extensions
 
 • Oasis Finder — hero/troop estimates and nearby oasis rankings
-• Watchman — game timers and custom reminders
+• TravAlarm — game timers and custom reminders
 • Travian QoL — select farm targets, right-click to open them in tabs, sort by bounty, loot calculator, to-do list, and more
 • Rank Tracker — rankings and history graphs
 • CP Planner — next-settlement ETA with celebration plans
