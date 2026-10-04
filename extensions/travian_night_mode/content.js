@@ -1222,6 +1222,25 @@ div.a2b table#troops td {
   background-color: var(--nm-base) !important;
 }
 
+/* Alliance bonus bars: unreached level markers are a near-white sprite and
+   the bar has a white outline. */
+.alliance-bonuses-overview .progressBar .levels > .notreached {
+  filter: brightness(0.35) !important;
+}
+
+.alliance-bonuses-overview .progressBar .front {
+  border-color: var(--nm-border) !important;
+}
+
+.alliance-bonuses-overview .progressBar .front .back {
+  border-color: var(--nm-green) !important;
+}
+
+/* Own row in the alliance bonus top-5 contributor tables */
+table.top5 > tbody > tr.hl > td {
+  background-color: var(--nm-elevated) !important;
+}
+
 #tradeRouteEditCreate > div.targetSelector > div:nth-child(1) > label > div.label.pinned {
   background-color: var(--nm-card) !important;
   color: var(--nm-white) !important;

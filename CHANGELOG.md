@@ -1,5 +1,10 @@
 # Changelog
 
+## Night Mode 2.1 — 2026-10-04
+
+- Darkened the unreached level markers and bar outline on the alliance bonus page.
+- Darkened your own row in the alliance bonus top-5 contributor tables.
+
 ## Travian QoL 1.0 — 2026-10-04
 
 - Updated the manifest and documentation version from 0.1.0 to 1.0.
