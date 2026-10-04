@@ -1,0 +1,18 @@
+{
+	"manifest_version": 3,
+	"name": "inactive Opener (InactiveSearch)",
+	"version": "5.1",
+	"description": "Collects InactiveSearch results and opens villages on the Travian map.",
+	"permissions": ["tabs", "storage"],
+
+	"host_permissions": ["*://*.inactivesearch.com/*", "*://*.inactivesearch.it/*"],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"content_scripts": [
+		{
+			"matches": ["*://*.inactivesearch.com/*", "*://*.inactivesearch.it/*"],
+			"js": ["inactivesearch_content.js"]
+		}
+	]
+}

@@ -1,0 +1,1220 @@
+/* Oasis Finder — refined dark "data tool" redesign.
+   Fonts: IBM Plex Sans (UI) + IBM Plex Mono (numbers). Loaded best-effort via
+   @import; falls back to system stacks if Travian's CSP blocks the request. */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap");
+
+/* ============================ Panel shell ============================ */
+#_vppanel {
+  position: fixed;
+  top: 73px;
+  left: 93px;
+  width: 380px;
+  background: #14171b;
+  color: #cfd3d8;
+  border: 1px solid #262b33;
+  border-radius: 16px;
+  z-index: 10000;
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  user-select: none;
+}
+#_vppanel *,
+#_vpdb-modal * {
+  box-sizing: border-box;
+}
+
+/* mono helper — every coordinate / score / tabular number */
+._vpmono {
+  font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* ============================ Header ============================ */
+._vpheader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  border-bottom: 1px solid #23272e;
+  cursor: move;
+}
+#_vppanel.dragging {
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.75);
+}
+._vplogo {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #5bd394, #2f9e6a);
+  box-shadow: 0 0 12px #5bd39455;
+  flex-shrink: 0;
+}
+._vpheader-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #e6e8ea;
+}
+._vpheader-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* density toggle */
+._vpdensity {
+  display: flex;
+  background: #101216;
+  border: 1px solid #262b33;
+  border-radius: 7px;
+  padding: 2px;
+  gap: 1px;
+}
+._vpdens-btn {
+  width: 24px;
+  height: 22px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: #5f656e;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+._vpdens-btn.active {
+  background: #222831;
+  color: #5bd394;
+}
+
+._vpcollapse-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #262b33;
+  background: #101216;
+  color: #7a818b;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+._vpcollapse-btn:hover {
+  color: #e6e8ea;
+}
+
+/* ============================ Sections ============================ */
+#_vpbody {
+  display: flex;
+  flex-direction: column;
+  /* Cap to the viewport and let ONLY the targets list scroll — every other
+     section keeps its natural height, so the widget itself never shows a
+     scrollbar regardless of which tab is open. */
+  max-height: calc(100vh - 84px);
+  overflow: hidden;
+}
+/* All body sections stay their natural size; the results list (below) is the
+   single flexible element that grows/shrinks to fill the remaining space. */
+#_vpbody > * {
+  flex-shrink: 0;
+}
+._vpsection {
+  padding: 12px 13px;
+  border-bottom: 1px solid #1b1f25;
+}
+
+/* generic label */
+._vpsection-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+
+/* ============================ Custom selects ============================ */
+._vpselect,
+._vpselect-sm {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-color: #101216 !important;
+  border: 1px solid #262b33 !important;
+  box-shadow: none !important;
+  border-radius: 8px;
+  color: #e6e8ea !important;
+  font-family: inherit !important;
+  cursor: pointer;
+  /* Defend against Travian's global <select> sizing that clips the text */
+  box-sizing: border-box !important;
+  height: auto !important;
+  min-height: 0 !important;
+  line-height: 1.3 !important;
+  text-indent: 0 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="%237a818b" stroke-width="1.4" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+}
+._vpselect {
+  width: 100%;
+  font-size: 12px !important;
+  font-weight: 500;
+  padding: 7px 28px 7px 10px !important;
+}
+._vpselect-sm {
+  width: 100%;
+  font-size: 11.5px !important;
+  color: #cfd3d8 !important;
+  padding: 6px 26px 6px 9px !important;
+}
+._vpselect:focus,
+._vpselect-sm:focus {
+  outline: none;
+  border-color: #3a414c;
+}
+._vpselect option,
+._vpselect-sm option {
+  background: #14171b !important;
+  color: #cfd3d8 !important;
+}
+
+/* village select gets a leading swatch */
+._vpvillage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+._vpswatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: #3c4250;
+  flex-shrink: 0;
+}
+
+/* ============================ Scan row (mode + radius) ============================ */
+._vpscan-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* mode segmented (drives hidden #_vpmode select) */
+._vpmode-seg {
+  display: flex;
+  flex: 1;
+  background: #101216;
+  border: 1px solid #262b33;
+  border-radius: 8px;
+  padding: 2px;
+}
+._vpseg-btn {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #7a818b;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+._vpseg-btn.active {
+  background: #222831;
+  color: #e6e8ea;
+  font-weight: 600;
+}
+#_vpmode {
+  display: none;
+}
+
+/* ============================ Steppers ============================ */
+._vpstepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+._vpstepper-box {
+  background: #101216;
+  border: 1px solid #262b33;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 1px;
+}
+._vpstep-btn {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: #1c2128;
+  color: #9aa0a8;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+._vpstep-btn:hover {
+  background: #242a33;
+  color: #e6e8ea;
+}
+._vpstep-btn:active {
+  background: #2f9e6a;
+  color: #0c1410;
+}
+
+/* typeable numeric inputs — transparent, centered, mono, no spinner */
+._vpnum,
+._vpunit-input,
+._vpsmithy-input {
+  font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* !important defeats Travian's global input theming (light bg / dark text) */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none;
+  text-align: center !important;
+  color: #e6e8ea !important;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+._vpnum::-webkit-inner-spin-button,
+._vpnum::-webkit-outer-spin-button,
+._vpunit-input::-webkit-inner-spin-button,
+._vpunit-input::-webkit-outer-spin-button,
+._vpsmithy-input::-webkit-inner-spin-button,
+._vpsmithy-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+._vpnum:focus,
+._vpunit-input:focus,
+._vpsmithy-input:focus {
+  color: #fff;
+}
+
+/* radius stepper */
+._vpradius-group {
+  display: flex;
+  align-items: center;
+  background: #101216;
+  border: 1px solid #262b33;
+  border-radius: 8px;
+  padding: 2px 2px 2px 9px;
+  gap: 2px;
+}
+._vpstepper-label {
+  font-size: 10px;
+  color: #6b7280;
+  letter-spacing: 0.04em;
+  margin-right: 1px;
+}
+#_vpradius {
+  width: 30px;
+}
+
+/* ============================ Sort + risk row ============================ */
+._vpsort-risk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+._vpsort-wrap {
+  flex: 1;
+}
+._vprisk-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+._vpslider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 4px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #6fa8e6, #5bd394 40%, #e3b755 75%, #e8786b);
+  outline: none;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: pan-x;
+}
+._vpslider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e8eaed;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+._vpslider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e8eaed;
+  border: none;
+  cursor: pointer;
+}
+._vprisk-label {
+  font-size: 10.5px;
+  font-weight: 500;
+  min-width: 62px;
+  color: #9aa0a8;
+}
+/* risk level colors (set via class on the label) */
+._vprisk-1 { color: #6fa8e6; }
+._vprisk-2 { color: #5bd394; }
+._vprisk-3 { color: #9aa0a8; }
+._vprisk-4 { color: #e3b755; }
+._vprisk-5 { color: #e8786b; }
+
+/* ============================ Tabs ============================ */
+._vptabs {
+  padding: 10px 13px;
+  border-bottom: 1px solid #1b1f25;
+}
+._vptab-track {
+  display: flex;
+  background: #101216;
+  border: 1px solid #262b33;
+  border-radius: 8px;
+  padding: 2px;
+}
+._vptab {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #7a818b;
+  padding: 7px 0;
+  cursor: pointer;
+}
+._vptab:hover {
+  color: #cfd3d8;
+}
+._vptab.active {
+  font-weight: 600;
+  color: #e6e8ea;
+  background: #222831;
+}
+._vptab-content {
+  border-bottom: 1px solid #1b1f25;
+}
+
+/* ============================ Hero panel ============================ */
+._vphero-summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+}
+._vphero-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+._vphero-line {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+._vphero-off {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e6e8ea;
+}
+._vphero-sub {
+  font-size: 10px;
+  color: #6b7280;
+}
+._vphero-tier {
+  font-size: 10px;
+  color: #5f656e;
+}
+._vpbtn-adjust {
+  font-size: 10.5px;
+  color: #9aa0a8;
+  background: #1c2128;
+  border: 1px solid #2a2f38;
+  border-radius: 6px;
+  padding: 5px 9px;
+  cursor: pointer;
+  font-family: inherit;
+}
+._vpbtn-adjust:hover {
+  color: #e6e8ea;
+}
+._vpbtn-fetch {
+  font-size: 10.5px;
+  color: #0c1410 !important;
+  background: #5bd394;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 11px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+}
+._vpbtn-fetch:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+._vphero-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 0 13px 12px;
+}
+._vphero-card {
+  background: #101216;
+  border: 1px solid #23272e;
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+._vphero-card-label {
+  font-size: 9.5px;
+  color: #6b7280;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+._vphero-card ._vpstepper {
+  justify-content: center;
+  gap: 6px;
+}
+._vphero-card ._vpnum {
+  width: 26px;
+  font-size: 13px;
+}
+
+/* ============================ Troops panel ============================ */
+._vptribe-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 13px 8px;
+}
+._vptribe-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #0c1410;
+  background: #5bd394;
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+._vpserver-badge {
+  font-size: 9.5px;
+  color: #9aa0a8;
+  background: #1c2128;
+  border: 1px solid #2a2f38;
+  border-radius: 5px;
+  padding: 3px 7px;
+  cursor: help;
+}
+._vphero-switch {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: #cfd3d8;
+  cursor: pointer;
+}
+#_vptroop-hero {
+  display: none;
+}
+._vpswitch {
+  width: 30px;
+  height: 17px;
+  border-radius: 9px;
+  background: #2a2f38;
+  position: relative;
+  display: inline-block;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+._vpswitch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.15s;
+}
+#_vptroop-hero:checked + ._vpswitch {
+  background: #5bd394;
+}
+#_vptroop-hero:checked + ._vpswitch ._vpswitch-knob {
+  left: 15px;
+}
+
+._vptroop-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px 8px;
+}
+
+/* mini secondary controls (fetch troops / none / preview / max) */
+._vpbtn-mini {
+  font-size: 10px;
+  color: #9aa0a8;
+  background: #1c2128;
+  border: 1px solid #2a2f38;
+  border-radius: 6px;
+  padding: 5px 9px;
+  cursor: pointer;
+  font-family: inherit;
+}
+._vpbtn-mini:hover {
+  color: #e6e8ea;
+}
+._vpbtn-mini:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+._vpbtn-mini-dim {
+  color: #7a818b;
+}
+
+._vptroop-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px 8px;
+}
+._vptroop-extra label {
+  font-size: 10px;
+  color: #6b7280;
+}
+._vptroop-extra ._vpselect-sm {
+  flex: 1;
+}
+#_vpmax-troops {
+  width: 40px;
+}
+
+._vpwarn-banner {
+  margin: 11px 13px;
+  padding: 8px;
+  background: #1d1416;
+  border: 1px solid #3a2226;
+  border-radius: 6px;
+  color: #e8786b;
+  font-size: 10px;
+  text-align: center;
+}
+
+/* unit list — clean vertical rows */
+._vpunit-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 158px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 13px 10px;
+}
+._vpunit-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 9px;
+  background: #101216;
+  border: 1px solid #23272e;
+  transition: background 0.12s, border-color 0.12s;
+}
+._vpunit-cell.has-units {
+  background: #171b21;
+  border-color: #5bd39455;
+}
+._vpunit-icontile {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #1c2128;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+._vpunit-icontile:hover {
+  background: #262d37;
+}
+/* unit toggled off — dimmed, excluded from calculations */
+._vpunit-cell.unit-disabled {
+  opacity: 0.45;
+}
+._vpunit-cell.unit-disabled ._vpunit-icontile {
+  background: #14171b;
+}
+._vpunit-cell.unit-disabled ._vpunit-icon {
+  filter: grayscale(1);
+}
+._vpunit-cell.unit-disabled ._vpunit-name {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+._vpunit-icon {
+  width: 18px;
+  height: 18px;
+  image-rendering: pixelated;
+}
+/* floating unit-stats tooltip (appended to body — fixed so the grid's
+   overflow and the panel's overflow:hidden can't clip it) */
+#_vpunit-tooltip {
+  position: fixed;
+  display: none;
+  z-index: 10001;
+  min-width: 148px;
+  padding: 8px 10px;
+  background: #14171b;
+  border: 1px solid #262b33;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  color: #cfd3d8;
+  pointer-events: none;
+}
+#_vpunit-tooltip ._vputt-name {
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+#_vpunit-tooltip ._vputt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  line-height: 1.6;
+}
+#_vpunit-tooltip ._vputt-row span:first-child {
+  color: #6b7280;
+}
+#_vpunit-tooltip ._vputt-bonus {
+  color: #e3b755;
+}
+#_vpunit-tooltip ._vputt-hint {
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid #23272e;
+  font-size: 10px;
+  color: #6b7280;
+}
+._vpunit-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #cfd3d8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+._vpunit-cell ._vpunit-input {
+  width: 34px;
+}
+/* smithy stepper — compact, amber value */
+._vpsmithy-row {
+  display: flex;
+  align-items: center;
+}
+._vpstepper-smithy ._vpstep-btn {
+  width: 16px;
+  height: 18px;
+  font-size: 11px;
+  background: #1c2128;
+  color: #8a909a;
+  border-radius: 4px;
+}
+._vpsmithy-input {
+  width: 26px;
+  color: #e3b755;
+  font-size: 11px;
+}
+
+/* ============================ Coverage ============================ */
+._vpactions {
+  /* footer wrapper — see footer rules below */
+}
+._vpcov-section {
+  padding: 10px 13px;
+  border-bottom: 1px solid #1b1f25;
+}
+._vpcov-meter {
+  position: relative;
+  height: 24px;
+  border-radius: 7px;
+  background: #101216;
+  border: 1px solid #23272e;
+  overflow: hidden;
+  cursor: pointer;
+}
+._vpcov-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  background: linear-gradient(90deg, #1d6b46, #5bd394);
+  opacity: 0.55;
+  transition: width 0.4s ease;
+}
+._vpcov-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #cfd3d8;
+  pointer-events: none;
+}
+
+/* ============================ Results ============================ */
+._vpcount-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 13px 6px;
+}
+._vpcount-targets {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+._vpcount-avail {
+  font-size: 10px;
+  color: #5f656e;
+}
+
+/* Selector scoped to `#_vpbody >` so it outranks the `#_vpbody > *` shrink rule
+   above — the results list is the sole section allowed to grow AND shrink. */
+#_vpbody > ._vpresults {
+  /* Fills the space the fixed sections leave and scrolls internally, so the
+     target list is the only thing that ever scrolls. */
+  flex: 1 1 auto;
+  min-height: 90px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 6px 6px 0;
+}
+._vpresults-empty {
+  padding: 14px 13px;
+  text-align: center;
+  color: #5f656e;
+  font-size: 10.5px;
+}
+
+._vpresult-row {
+  padding: 6px 10px;
+  border-radius: 9px;
+  border-left: 3px solid transparent;
+  background: transparent;
+  margin-bottom: 1px;
+  transition: background 0.12s;
+}
+._vpresult-row:hover {
+  background: #171b21;
+}
+._vpresult-line {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+._vpresult-body {
+  flex: 1;
+  min-width: 0;
+}
+._vpresult-primary {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+._vpresult-value {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: #eceef0;
+  letter-spacing: -0.01em;
+}
+._vpresult-unit {
+  font-size: 10px;
+  color: #5f656e;
+}
+._vpresult-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 11px;
+  margin-top: 5px;
+  font-size: 10.5px;
+}
+._vpresult-meta > span,
+._vpresult-meta > a {
+  white-space: nowrap;
+}
+._vpresult-meta > ._vpage:empty {
+  display: none;
+}
+._vpresult-meta ._vpmap-go {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  color: #8a909a !important;
+  text-decoration: none;
+}
+._vpresult-meta ._vpmap-go:hover {
+  color: #5bd394 !important;
+}
+._vpmeta-rpm { color: #6fa8e6; }
+._vpmeta-dist,
+._vpmeta-time { color: #7a818b; }
+
+/* score badge + tier rail colors (tier class lives on the row) */
+._vpscore-badge {
+  flex-shrink: 0;
+  align-self: center;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+._vpresult-row._vpscore-great { border-left-color: #5bd394; }
+._vpresult-row._vpscore-good  { border-left-color: #4e9e74; }
+._vpresult-row._vpscore-mid   { border-left-color: #e3b755; }
+._vpresult-row._vpscore-low   { border-left-color: #6b7280; }
+._vpscore-great ._vpscore-badge { color: #5bd394; background: #5bd3941f; border: 1px solid #5bd39433; }
+._vpscore-good ._vpscore-badge  { color: #4e9e74; background: #4e9e741f; border: 1px solid #4e9e7433; }
+._vpscore-mid ._vpscore-badge   { color: #e3b755; background: #e3b7551f; border: 1px solid #e3b75533; }
+._vpscore-low ._vpscore-badge   { color: #6b7280; background: #6b72801f; border: 1px solid #6b728033; }
+
+/* send (rally) button + coord (map) link */
+._vpresult-link {
+  text-decoration: none;
+  flex-shrink: 0;
+}
+._vprally-go {
+  font-size: 10.5px;
+  font-weight: 600;
+  /* black text on the green Send, defended against Travian's <a> link color */
+  color: #0c1410 !important;
+  background: #5bd394;
+  border-radius: 7px;
+  padding: 7px 12px;
+  align-self: center;
+}
+._vprally-go:hover {
+  background: #6ddaa1;
+  color: #0c1410 !important;
+}
+
+/* HP-loss colors (restyled to the new 3-step palette) */
+._vphp-ok { color: #5bd394; }
+._vphp-low { color: #e3b755; }
+._vphp-mid { color: #e8786b; }
+._vphp-high { color: #e8786b; }
+
+/* xp / generic positive-negative reused in meta + drawer */
+._vpresult-xp { color: #e3b755; }
+._vpresult-positive { color: #5bd394; font-weight: 600; }
+._vpresult-negative { color: #e8786b; font-weight: 600; }
+
+/* detail drawer — always emitted, shown only in detail density */
+._vpresult-drawer {
+  display: none;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid #23272e;
+}
+._vpdrawer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 7px;
+}
+._vpchip {
+  font-size: 10px;
+  color: #9aa0a8;
+  background: #101216;
+  border: 1px solid #23272e;
+  border-radius: 5px;
+  padding: 3px 7px;
+}
+._vpchip b {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-weight: 500;
+  color: #cfd3d8;
+}
+._vpdrawer-stats {
+  display: flex;
+  gap: 14px;
+  font-size: 10px;
+  color: #6b7280;
+}
+._vpdrawer-stats b {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-weight: 500;
+}
+
+/* ---- density modes (class on #_vppanel) drive row layout in CSS ---- */
+#_vppanel.dens-compact ._vpresult-row {
+  padding: 4px 9px;
+}
+#_vppanel.dens-compact ._vpresult-meta {
+  display: none;
+}
+#_vppanel.dens-detail ._vpresult-row {
+  padding: 9px 10px;
+  background: #161a1f;
+  margin-bottom: 5px;
+}
+#_vppanel.dens-detail ._vpresult-row:hover {
+  background: #171b21;
+}
+#_vppanel.dens-detail ._vpresult-drawer {
+  display: block;
+}
+
+/* ============================ Footer ============================ */
+._vpfooter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 13px;
+  border-top: 1px solid #1b1f25;
+}
+._vpbtn {
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 9px;
+}
+._vpbtn-sm {
+  color: #8a909a;
+  background: #141821;
+  border: 1px solid #262b33;
+  padding: 3px 7px;
+}
+._vpbtn-sm:hover {
+  color: #e6e8ea;
+}
+._vpbtn-warn {
+  color: #e8786b;
+  background: #1d1416;
+  border: 1px solid #3a2226;
+  padding: 3px 7px;
+}
+._vpbtn-warn:hover {
+  color: #ef8d80;
+}
+#_vppanel ._vpfooter > ._vpbtn {
+  padding: 2px 5px;
+  font-size: 8px;
+  line-height: 12px;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  border-radius: 3px;
+}
+._vpdb-count {
+  margin-left: auto;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  color: #5f656e;
+}
+
+/* ============================ DB / Errors modal ============================ */
+._vpmodal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 10, 0.66);
+  backdrop-filter: blur(2px);
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+}
+._vpmodal-dialog {
+  width: 404px;
+  max-height: 74vh;
+  display: flex;
+  flex-direction: column;
+  background: #14171b;
+  border: 1px solid #262b33;
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  color: #cfd3d8;
+  font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+}
+._vpmodal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 15px;
+  border-bottom: 1px solid #23272e;
+  flex-shrink: 0;
+}
+._vpmodal-title {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: #e6e8ea;
+}
+._vpmodal-count {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  color: #6b7280;
+}
+._vpmodal-close {
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #262b33;
+  background: #101216;
+  color: #9aa0a8;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+._vpmodal-close:hover {
+  color: #e6e8ea;
+}
+._vpmodal-colhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 15px;
+  border-bottom: 1px solid #1b1f25;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5f656e;
+  flex-shrink: 0;
+}
+._vpcol-loc { width: 60px; }
+._vpcol-dist { width: 36px; }
+._vpcol-gar { flex: 1; }
+
+._vpmodal-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 8px;
+}
+._vpmodal-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 7px;
+  border-bottom: 1px solid #191d23;
+}
+._vpmodal-coords {
+  width: 60px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11.5px;
+  color: #cfd3d8 !important;
+  text-decoration: none;
+}
+._vpmodal-coords:hover {
+  color: #5bd394 !important;
+}
+._vpmodal-dist {
+  width: 36px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  color: #7a818b;
+}
+._vpmodal-gar {
+  flex: 1;
+  min-width: 0;
+  font-size: 10.5px;
+  color: #9aa0a8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+._vpmodal-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 15px;
+  border-top: 1px solid #1b1f25;
+  flex-shrink: 0;
+}
+._vpmodal-foot-note {
+  font-size: 10px;
+  color: #5f656e;
+}
+._vpmodal-clear {
+  margin-left: auto;
+  font-size: 10px;
+  color: #e8786b;
+  background: #1d1416;
+  border: 1px solid #3a2226;
+  border-radius: 6px;
+  padding: 5px 11px;
+  cursor: pointer;
+  font-family: inherit;
+}
+._vpmodal-clear:hover {
+  color: #ef8d80;
+}
+
+/* scrollbars */
+._vpresults::-webkit-scrollbar,
+._vpunit-grid::-webkit-scrollbar,
+._vpmodal-list::-webkit-scrollbar {
+  width: 8px;
+}
+._vpresults::-webkit-scrollbar-thumb,
+._vpunit-grid::-webkit-scrollbar-thumb,
+._vpmodal-list::-webkit-scrollbar-thumb {
+  background: #2c313a;
+  border-radius: 4px;
+}
+._vpresults::-webkit-scrollbar-track,
+._vpunit-grid::-webkit-scrollbar-track,
+._vpmodal-list::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="color-scheme" content="dark" />
+		<title>Travian QoL — Settings</title>
+		<!-- Pre-establish the font CDN connection so the @font-face requests
+		     don't pay a DNS+TLS round trip when the stylesheet resolves. -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="options.css" />
+	</head>
+	<body>
+		<div class="app">
+			<aside class="rail">
+				<div class="brand">
+					<svg class="brand__mark" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/>
+					</svg>
+					<span class="brand__text">
+						<span class="brand__title">Travian QoL</span>
+						<span class="brand__sub">Settings</span>
+					</span>
+				</div>
+
+				<nav class="rail__nav" aria-label="Settings sections" role="tablist">
+					<button id="rail-features" class="rail__item is-active" data-tab="features" role="tab" aria-selected="true" aria-controls="tab-features">
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<circle cx="12" cy="12" r="3"/>
+							<path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+						</svg>
+						<span>Features</span>
+					</button>
+					<button id="rail-loot-calc" class="rail__item" data-tab="loot-calc" role="tab" aria-selected="false" aria-controls="tab-loot-calc">
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<rect x="4" y="3" width="16" height="18" rx="2"/>
+							<path d="M8 7h8M8 11h8M8 15h5"/>
+						</svg>
+						<span>Loot Calculator</span>
+					</button>
+					<button id="rail-skip-ads" class="rail__item" data-tab="skip-ads" role="tab" aria-selected="false" aria-controls="tab-skip-ads">
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<polygon points="5 3 19 12 5 21 5 3"/>
+							<line x1="22" y1="3" x2="22" y2="21"/>
+						</svg>
+						<span>Skip Ads</span>
+					</button>
+					<button id="rail-counter" class="rail__item" data-tab="counter" role="tab" aria-selected="false" aria-controls="tab-counter">
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<polyline points="23 4 23 10 17 10"/>
+							<polyline points="1 20 1 14 7 14"/>
+							<path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+						</svg>
+						<span>Counter-attack</span>
+					</button>
+				</nav>
+
+			</aside>
+
+			<main class="stage">
+				<section id="tab-features" class="panel is-active" role="tabpanel" aria-labelledby="rail-features" tabindex="0">
+					<header class="panel__head">
+						<div>
+							<div class="panel__eyebrow">Section 01 · Features</div>
+							<h1 class="panel__title">Field Toggles</h1>
+							<p class="panel__lede">
+								Each module is independent. Changes apply on the next page load,
+								or live when the module supports hot toggling.
+							</p>
+						</div>
+						<div class="panel__stat" role="status" aria-label="Active modules">
+							<span class="panel__stat-value" id="feature-active-count" aria-hidden="true">—</span>
+							<span class="panel__stat-label" aria-hidden="true">active</span>
+						</div>
+					</header>
+					<div id="features" class="featurelist"></div>
+				</section>
+
+				<section id="tab-loot-calc" class="panel" role="tabpanel" aria-labelledby="rail-loot-calc" tabindex="0">
+					<header class="panel__head">
+						<div>
+							<div class="panel__eyebrow">Section 02 · Loot Calculator</div>
+							<h1 class="panel__title">Carry-Capacity Defaults</h1>
+							<p class="panel__lede">
+								Pick <em>Default (all servers)</em> to set the unit every new server
+								starts with, or pick a specific server to override it there.
+								Changes apply to open Travian tabs immediately.
+							</p>
+						</div>
+					</header>
+
+					<div class="card">
+						<div class="card__head">
+							<span class="card__head-label">Server</span>
+							<select id="lc-server" class="select"></select>
+						</div>
+						<div id="lc-settings" class="card__body form"></div>
+					</div>
+				</section>
+
+				<section id="tab-counter" class="panel" role="tabpanel" aria-labelledby="rail-counter" tabindex="0">
+					<header class="panel__head">
+						<div>
+							<div class="panel__eyebrow">Section 04 · Counter-attack</div>
+							<h1 class="panel__title">Counter-Attack Calculator</h1>
+							<p class="panel__lede">
+								Enter the incoming attack and your interceptor village.
+								The math is the same one <a href="https://www.inactivesearch.it/tools/counter-attack-calculator" target="_blank" rel="noopener">inactivesearch</a> uses
+								(torus distance, TS, boots, artefact).
+							</p>
+						</div>
+					</header>
+					<div class="card">
+						<div class="card__body ca">
+							<!-- Top: shared attack info -->
+							<div class="ca__row ca__row--shared">
+								<label class="ca__field">
+									<span class="ca__label">Attacked village</span>
+									<input id="ca-target" type="text" placeholder="(x|y)" class="lc-num ca__coords">
+								</label>
+								<label class="ca__field">
+									<span class="ca__label">Arrival</span>
+									<input id="ca-arrival" type="datetime-local" step="1" class="lc-num ca__time">
+								</label>
+								<label class="ca__field">
+									<span class="ca__label">Server</span>
+									<select id="ca-server-speed" class="select ca__sel">
+										<option value="1">1×</option>
+										<option value="2">2×</option>
+										<option value="3" selected>3×</option>
+										<option value="5">5×</option>
+										<option value="10">10×</option>
+									</select>
+								</label>
+								<label class="ca__field">
+									<span class="ca__label">Map</span>
+									<select id="ca-map" class="select ca__sel">
+										<option value="200">200 (S)</option>
+										<option value="400" selected>400</option>
+										<option value="800">800 (L)</option>
+									</select>
+								</label>
+							</div>
+
+							<!-- Side-by-side armies -->
+							<div class="ca__armies">
+								<!-- ATTACKER -->
+								<fieldset class="ca__army" data-side="att">
+									<legend class="ca__legend">Attacker</legend>
+									<label class="ca__field">
+										<span class="ca__label">Coords</span>
+										<input data-att="coords" type="text" placeholder="(x|y)" class="lc-num">
+									</label>
+									<label class="ca__field">
+										<span class="ca__label">Slowest unit</span>
+										<select data-att="speed" class="select"></select>
+									</label>
+									<label class="ca__field">
+										<span class="ca__label">TS lvl</span>
+										<select data-att="ts" class="select"></select>
+									</label>
+									<label class="ca__field">
+										<span class="ca__label">Boots</span>
+										<select data-att="boots" class="select">
+											<option value="1">—</option>
+											<option value="1.25">Mercenary (+25%)</option>
+											<option value="1.50">Warrior (+50%)</option>
+											<option value="1.75">Archon (+75%)</option>
+										</select>
+									</label>
+									<label class="ca__field">
+										<span class="ca__label">Artefact</span>
+										<select data-att="art" class="select">
+											<option value="0.33">0.33×</option>
+											<option value="0.5">0.5×</option>
+											<option value="0.67">0.67×</option>
+											<option value="1" selected>—</option>
+											<option value="1.5">1.5×</option>
+											<option value="2">2×</option>
+											<option value="3">3×</option>
+										</select>
+									</label>
+								</fieldset>
+
+								<!-- INTERCEPTOR -->
+								<fieldset class="ca__army" data-side="int">
+									<legend class="ca__legend">Interceptor (you)</legend>
+									<label class="ca__field">
+										<span class="ca__label">Coords</span>
+										<input data-int="coords" type="text" placeholder="(x|y)" class="lc-num">
+									</label>
+									<label class="ca__field ca__field--village" hidden>
+										<span class="ca__label">My village</span>
+										<select id="ca-int-village" class="select" title="Pick from your villages"></select>
+									</label>
+									<label class="ca__field">
+										<span class="ca__label">Slowest unit</span>
+										<select data-int="speed" class="select"></select>
+									</label>
+									<label class="ca__field">
+										<span class="ca__label">TS lvl</span>
+										<select data-int="ts" class="select"></select>
+									</label>
+									<label class="ca__field">
+										<span class="ca__label">Boots</span>
+										<select data-int="boots" class="select">
+											<option value="1">—</option>
+											<option value="1.25">Mercenary (+25%)</option>
+											<option value="1.50">Warrior (+50%)</option>
+											<option value="1.75">Archon (+75%)</option>
+										</select>
+									</label>
+									<label class="ca__field">
+										<span class="ca__label">Artefact</span>
+										<select data-int="art" class="select">
+											<option value="0.33">0.33×</option>
+											<option value="0.5">0.5×</option>
+											<option value="0.67">0.67×</option>
+											<option value="1" selected>—</option>
+											<option value="1.5">1.5×</option>
+											<option value="2">2×</option>
+											<option value="3">3×</option>
+										</select>
+									</label>
+								</fieldset>
+							</div>
+
+							<!-- Output -->
+							<div class="ca__out" id="ca-out" role="status" aria-live="polite"></div>
+						</div>
+					</div>
+				</section>
+
+				<section id="tab-skip-ads" class="panel" role="tabpanel" aria-labelledby="rail-skip-ads" tabindex="0">
+					<header class="panel__head">
+						<div>
+							<div class="panel__eyebrow">Section 03 · Skip Ads</div>
+							<h1 class="panel__title">Builder-Bonus Auto-Skip</h1>
+							<p class="panel__lede">
+								Mutes and skips the builder bonus video inside Travian's ad iframe.
+								Tune the playtime threshold and poll rates. Originally by DUDSS.
+							</p>
+						</div>
+					</header>
+					<div class="card">
+						<div id="sa-settings" class="card__body form"></div>
+					</div>
+				</section>
+
+			</main>
+		</div>
+
+		<script src="../lib/registry.js"></script>
+		<script src="../features/farmlist-multi-select/index.js"></script>
+		<script src="../features/farmlist-bounty-sort/index.js"></script>
+		<script src="../features/adventure-sort/index.js"></script>
+		<script src="../features/village-resource-total/index.js"></script>
+		<script src="../features/report-opener/index.js"></script>
+		<script src="../features/loot-calc/index.js"></script>
+		<script src="../features/skip-ads/index.js"></script>
+		<script src="../features/todolist/index.js"></script>
+		<script src="options.js"></script>
+	</body>
+</html>

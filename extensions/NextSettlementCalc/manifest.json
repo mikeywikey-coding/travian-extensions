@@ -1,0 +1,80 @@
+{
+	"manifest_version": 3,
+	"name": "Travian CP Predictor",
+	"version": "2.3",
+	"description": "Forecasts settlement culture-point targets from observed production and planned celebrations.",
+	"author": "miguelrocha1511@gmail.com",
+	"permissions": ["storage", "notifications", "alarms"],
+	"host_permissions": [
+		"*://*.travian.com/*",
+		"*://*.travian.de/*",
+		"*://*.travian.us/*",
+		"*://*.travian.fr/*",
+		"*://*.travian.it/*",
+		"*://*.travian.cz/*",
+		"*://*.travian.pl/*",
+		"*://*.travian.ru/*",
+		"*://*.travian.tr/*",
+		"*://*.travian.ae/*",
+		"*://*.travian.net/*",
+		"*://*.travian.co.uk/*"
+	],
+	"action": {
+		"default_popup": "popup.html",
+		"default_title": "CP Planner",
+		"default_icon": {
+			"16": "icon128.png",
+			"32": "icon128.png",
+			"48": "icon128.png",
+			"128": "icon128.png"
+		}
+	},
+	"icons": {
+		"16": "icon128.png",
+		"32": "icon128.png",
+		"48": "icon128.png",
+		"128": "icon128.png"
+	},
+	"background": {
+		"service_worker": "background.js"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"*://*.travian.com/*",
+				"*://*.travian.de/*",
+				"*://*.travian.us/*",
+				"*://*.travian.fr/*",
+				"*://*.travian.it/*",
+				"*://*.travian.cz/*",
+				"*://*.travian.pl/*",
+				"*://*.travian.ru/*",
+				"*://*.travian.tr/*",
+				"*://*.travian.ae/*",
+				"*://*.travian.net/*",
+				"*://*.travian.co.uk/*"
+			],
+			"js": ["shared.js", "data.js", "content.js"],
+			"run_at": "document_idle"
+		}
+	],
+	"web_accessible_resources": [
+		{
+			"resources": ["alarm.mp3"],
+			"matches": [
+				"*://*.travian.com/*",
+				"*://*.travian.de/*",
+				"*://*.travian.us/*",
+				"*://*.travian.fr/*",
+				"*://*.travian.it/*",
+				"*://*.travian.cz/*",
+				"*://*.travian.pl/*",
+				"*://*.travian.ru/*",
+				"*://*.travian.tr/*",
+				"*://*.travian.ae/*",
+				"*://*.travian.net/*",
+				"*://*.travian.co.uk/*"
+			]
+		}
+	]
+}

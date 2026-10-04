@@ -1,0 +1,43 @@
+{
+	"manifest_version": 3,
+	"name": "TravAlarm",
+	"version": "3.25",
+	"permissions": [
+		"notifications",
+		"alarms",
+		"storage",
+		"contextMenus",
+		"offscreen"
+	],
+	"host_permissions": ["*://*.travian.com/*"],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"web_accessible_resources": [
+		{
+			"resources": ["alarm.mp3", "attack.mp3"],
+			"matches": ["*://*.travian.com/*"]
+		}
+	],
+	"icons": { "48": "icon.png" },
+	"content_scripts": [
+		{
+			"matches": ["*://*.travian.com/*"],
+			"exclude_matches": [
+				"*://*.travian.com/international*",
+				"*://*.travian.com/uk/calendar*",
+				"*://*.travian.com/account*"
+			],
+			"js": [
+				"state.js",
+				"icons.js",
+				"helpers.js",
+				"fetchers.js",
+				"scanners.js",
+				"ui.js",
+				"content.js"
+			],
+			"css": ["content.css"]
+		}
+	]
+}

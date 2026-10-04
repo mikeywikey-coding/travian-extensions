@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Travian Best Oasis Finder",
+  "version": "69.3",
+  "description": "Oasis scanner for Travian.",
+  "icons": { "48": "icon.png", "128": "icon.png" },
+  "permissions": ["storage"],
+  "host_permissions": ["*://*.travian.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "externally_connectable": {
+    "ids": ["kglfeknoojikombokgbemggkllbfkjgj"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.travian.com/karte.php*"],
+      "js": ["page-bridge.js"],
+      "world": "MAIN",
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.travian.com/karte.php*"],
+      "js": [
+        "constants.js",
+        "utils.js",
+        "bridge.js",
+        "coverage.js",
+        "storage.js",
+        "hero-sync.js",
+        "ui.js",
+        "scanner.js",
+        "analyzer.js",
+        "main.js"
+      ],
+      "css": ["oasis_finder.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.travian.com/build.php*"],
+      "js": ["farmlist.js"],
+      "css": ["farmlist.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

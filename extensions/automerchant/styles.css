@@ -1,0 +1,514 @@
+/**
+ * Travian NPC Resource Helper v3.0 Styles
+ */
+
+/* Per-resource lock toggle injected next to each NPC desired input. */
+button._npc-lock-btn {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin-left: 4px !important;
+  padding: 2px 6px !important;
+  border: 1px solid #d8a93b !important;
+  background: #fff4d4 !important;
+  color: #000 !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  opacity: 1 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+  transition: transform 0.1s ease, background-color 0.15s ease !important;
+}
+button._npc-lock-btn:hover {
+  background: #ffe79c !important;
+  transform: translateY(-1px);
+}
+button._npc-lock-btn._npc-lock-on {
+  background: #ffb84d !important;
+  border-color: #b97515 !important;
+}
+input[name^="desired"][readonly] {
+  background: #fff4d4 !important;
+}
+
+/* Smooth transitions for resource rows */
+._r-resource {
+  transition:
+    border-color 0.2s ease,
+    background-color 0.15s ease;
+}
+._r-resource:hover {
+  background-color: #fefefe;
+}
+
+/* Focus ring for inputs */
+._r-custom-input:focus,
+._r-input:focus,
+._r-select:focus {
+  outline: none;
+}
+
+/* Scrollbar styling for troop calculator */
+._r-troop-calc {
+  max-height: 400px;
+  overflow-y: auto;
+}
+._r-troop-calc::-webkit-scrollbar {
+  width: 4px;
+}
+._r-troop-calc::-webkit-scrollbar-track {
+  background: transparent;
+}
+._r-troop-calc::-webkit-scrollbar-thumb {
+  background: #c5b88a;
+  border-radius: 2px;
+}
+._r-troop-calc::-webkit-scrollbar-thumb:hover {
+  background: #a89860;
+}
+
+/* ---- Main container ---- */
+#_rh-ui {
+  margin: 10px 0;
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 12px;
+}
+
+._r-panel {
+  background: #faf6ed;
+  border: 1px solid #b8a882;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(80, 60, 20, 0.12);
+}
+
+/* ---- Tabs ---- */
+._r-tabs {
+  display: flex;
+  background: #e8dfc8;
+  border-bottom: 1px solid #b8a882;
+}
+._r-tab {
+  flex: 1;
+  padding: 7px 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #7a6c4f;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-bottom: 2px solid transparent;
+}
+._r-tab:hover {
+  color: #4a3f2e;
+  background: rgba(255, 255, 255, 0.3);
+}
+._r-tab.active {
+  color: #228B22;
+  border-bottom-color: #5a9e2f;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+._r-tab-content {
+  padding: 10px;
+}
+
+/* ---- Summary / Resource rows ---- */
+._r-summary {
+  margin-bottom: 8px;
+}
+._r-resource {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  margin: 3px 0;
+  background: #fff;
+  border-radius: 4px;
+  border-left: 3px solid #ccc;
+}
+._r-resource.fulfilled {
+  border-left-color: #5a9e2f;
+}
+._r-resource.partial {
+  border-left-color: #e6a117;
+}
+._r-resource-icon {
+  width: 22px;
+  font-size: 14px;
+}
+._r-resource-name {
+  flex: 1;
+  font-weight: 600;
+  color: #4a3f2e;
+  font-size: 11px;
+}
+._r-resource-amounts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---- Buttons ---- */
+._r-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+._r-btn {
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  font-family: inherit;
+}
+._r-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+._r-btn-primary {
+  flex: 1;
+  background: linear-gradient(to bottom, #6aad2d, #4e8a1e);
+  color: #fff;
+  border-color: #3a6d12;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+._r-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(to bottom, #7bbf3a, #5a9e2f);
+}
+._r-btn-icon {
+  width: 32px;
+  padding: 6px 0;
+  background: #fff;
+  border: 1px solid #c5b88a;
+  color: #7a6c4f;
+  font-size: 14px;
+  text-align: center;
+}
+._r-btn-icon:hover {
+  background: #f0ead8;
+}
+._r-btn-small {
+  padding: 4px 10px;
+  background: #fff;
+  border: 1px solid #c5b88a;
+  color: #5a4d32;
+}
+._r-btn-small:hover {
+  background: #f0ead8;
+}
+._r-btn-full {
+  width: 100%;
+}
+
+/* ---- States ---- */
+._r-no-action {
+  color: #8a7d65;
+  font-style: italic;
+  text-align: center;
+  padding: 14px 10px;
+}
+
+/* ---- Troop calculator ---- */
+._r-field {
+  margin-bottom: 10px;
+}
+._r-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #8a7d65;
+  margin-bottom: 4px;
+}
+
+/* Tribe selector row */
+._r-tribe-selector-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+._r-tribe-select {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1px solid #c5b88a;
+  border-radius: 4px;
+  background: #fff;
+  color: #4a3f2e;
+  cursor: pointer;
+  min-width: 0;
+}
+._r-tribe-select:focus {
+  border-color: #5a9e2f;
+  box-shadow: 0 0 0 2px rgba(90, 158, 47, 0.2);
+}
+._r-server-type-select {
+  flex: 0 0 auto;
+  width: auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: #7a6c4f;
+}
+
+._r-select {
+  width: auto;
+  height: 30px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  border: 1px solid #c5b88a;
+  border-radius: 4px;
+  background: #fff;
+  color: #4a3f2e;
+}
+._r-select:focus {
+  border-color: #5a9e2f;
+  box-shadow: 0 0 0 2px rgba(90, 158, 47, 0.2);
+}
+._r-input {
+  width: 80px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  border: 1px solid #c5b88a;
+  border-radius: 4px;
+  background: #fff;
+  color: #4a3f2e;
+  text-align: right;
+}
+._r-input:focus {
+  border-color: #5a9e2f;
+  box-shadow: 0 0 0 2px rgba(90, 158, 47, 0.2);
+}
+._r-build-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ---- Cost display ---- */
+._r-cost-header {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #8a7d65;
+  margin-bottom: 4px;
+}
+._r-cost-grid {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+._r-cost-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: #fff;
+  border: 1px solid #e0d8c4;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+._r-cost-icon {
+  font-size: 12px;
+}
+._r-cost-val {
+  font-weight: 600;
+  color: #4a3f2e;
+}
+
+/* ---- Build info ---- */
+._r-buildinfo {
+  background: #fff;
+  border: 1px solid #e0d8c4;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 10px;
+}
+._r-buildinfo-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  font-size: 11px;
+  color: #5a4d32;
+}
+._r-buildinfo-val {
+  font-weight: 700;
+}
+._r-highlight {
+  color: #228B22;
+  font-size: 12px;
+}
+
+/* ---- Preview ---- */
+._r-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 11px;
+  color: #4a3f2e;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e0d8c4;
+}
+._r-preview-total {
+  font-size: 11px;
+}
+._r-ok {
+  color: #228B22;
+}
+._r-warn {
+  color: #c07020;
+}
+._r-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 0;
+  font-size: 11px;
+  color: #4a3f2e;
+}
+._r-preview-icon {
+  width: 18px;
+  font-size: 12px;
+}
+._r-preview-name {
+  flex: 1;
+  font-weight: 500;
+}
+._r-preview-need {
+  width: 60px;
+  text-align: right;
+  color: #8a7d65;
+}
+._r-preview-warn {
+  margin-top: 6px;
+  padding: 5px 8px;
+  background: #fff8ee;
+  border: 1px solid #e6c870;
+  border-radius: 3px;
+  font-size: 10px;
+  color: #8a6520;
+}
+/* ---- Copy button ---- */
+._r-copy-btn {
+  padding: 1px 5px;
+  margin-left: 4px;
+  background: #fff;
+  border: 1px solid #c5b88a;
+  border-radius: 3px;
+  color: #7a6c4f;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+._r-copy-btn:hover {
+  background: #f0ead8;
+  border-color: #a89060;
+}
+._r-copy-btn._r-copy-ok {
+  background: #edf7dc;
+  border-color: #5a9e2f;
+  color: #228B22;
+}
+._r-btn._r-send-ok {
+  background: linear-gradient(to bottom, #5cb85c, #3d8b3d);
+  border-color: #2e6b2e;
+  cursor: default;
+}
+
+/* ---- Unit list (troop selector) ---- */
+._r-unit-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+._r-unit-hint {
+  font-size: 10px;
+  color: #a09070;
+  font-style: italic;
+}
+
+._r-unit-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+._r-unit-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 7px 4px 6px;
+  background: #fff;
+  border: 1px solid #d0c8b0;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  user-select: none;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    box-shadow 0.15s;
+}
+._r-unit-item:hover {
+  border-color: #7bbf3a;
+  background: #f4fae8;
+}
+._r-unit-item.active {
+  border-color: #5a9e2f;
+  background: #edf7dc;
+  box-shadow: 0 0 0 2px rgba(90, 158, 47, 0.25);
+}
+._r-unit-item span {
+  font-size: 9px;
+  font-weight: 600;
+  color: #4a3f2e;
+  line-height: 1.2;
+  word-break: break-word;
+}
+._r-unit-item.active span {
+  color: #228B22;
+}
+
+/* ---- Resource sprite icon sizing ---- */
+._r-resource-icon i,
+._r-cost-icon i,
+._r-preview-icon i {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ---- Info blocks ---- */
+._r-info-block {
+  padding: 8px;
+  background: #f0f8e8;
+  border: 1px solid #b8d88a;
+  border-radius: 4px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #228B22;
+}
+._r-info-block.warn {
+  background: #fff8ee;
+  border-color: #e6c870;
+  color: #8a6520;
+}

@@ -1,0 +1,1182 @@
+/* =========================================================================
+   Travian QoL — Obsidian Glass
+   -------------------------------------------------------------------------
+   Matches the shared "Obsidian Glass" aesthetic used by NextSettlementCalc
+   and travAlarm: cool charcoal surface (rgb 29,29,32), rounded soft cards,
+   amber accent (#f5a623), emerald state indicators, system-ui + JetBrains
+   Mono + Cinzel for the top eyebrow.
+   ========================================================================= */
+
+:root {
+	/* Surfaces — stepped depth */
+	--bg-base:      rgb(29, 29, 32);
+	--bg-surface:   #18181b;
+	--bg-raised:    #1f1f23;
+	--bg-input:     #131316;
+	--bg-glass:     rgba(255, 255, 255, 0.03);
+
+	/* Borders */
+	--border-subtle:  rgba(255, 255, 255, 0.06);
+	--border-visible: rgba(255, 255, 255, 0.10);
+	--border-strong:  rgba(255, 255, 255, 0.14);
+
+	/* Text */
+	--text-primary:   #f0f0f2;
+	--text-secondary: #8b8b95;
+	--text-tertiary:  #5a5a65;
+	--text-faint:     #3f3f48;
+
+	/* Accents */
+	--amber:          #f5a623;
+	--amber-hi:       #ffba3e;
+	--amber-dim:      rgba(245, 166, 35, 0.12);
+	--amber-glow:     rgba(245, 166, 35, 0.28);
+	--emerald:        #34d399;
+	--emerald-dim:    rgba(52, 211, 153, 0.12);
+	--blue:           #60a5fa;
+	--rose:           #f87171;
+
+	/* Shadows */
+	--shadow-card:    0 1px 3px rgba(0, 0, 0, 0.30), 0 0 0 1px var(--border-subtle);
+	--shadow-card-hi: 0 4px 16px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--border-visible);
+
+	/* Type */
+	--font-display: 'Cinzel', 'Iowan Old Style', Georgia, serif;
+	--font-body:    system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif;
+	--font-mono:    'JetBrains Mono', 'Cascadia Code', 'SF Mono', 'Consolas', ui-monospace, monospace;
+
+	--ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+	--radius:    10px;
+	--radius-sm: 6px;
+	--radius-lg: 14px;
+}
+
+* { box-sizing: border-box; }
+/* Hide scrollbars — scrolling still works via wheel/touch. */
+*::-webkit-scrollbar { display: none; }
+
+html, body { height: 100%; }
+body {
+	margin: 0;
+	background: var(--bg-base);
+	color: var(--text-primary);
+	font-family: var(--font-body);
+	/* WCAG-favored 16px body baseline; smaller components scale down
+	   explicitly via rem so users with browser-zoom get proportional UI. */
+	font-size: 16px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	font-variant-numeric: tabular-nums;
+	/* Pinned 800×560 — same outer popup size on every tab so switching
+	   doesn't jump. The active panel's card flex-fills the leftover
+	   vertical space (see .panel.is-active + .featurelist + .card). */
+	width: 800px;
+	height: 560px;
+}
+
+/* Respect users with vestibular concerns — cuts every transition/animation
+   down to a near-instant 1ms. Required by WCAG 2.1 SC 2.3.3. */
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 1ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 1ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Global focus styling. Every interactive element gets a clearly visible
+   amber ring at 2px with 2px offset, so keyboard users always know where
+   they are. Individual components can override but should never remove it. */
+:focus { outline: none; }
+:focus-visible {
+	outline: 2px solid var(--amber);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* --- Shell --------------------------------------------------------------- */
+.app {
+	display: grid;
+	grid-template-columns: 180px minmax(0, 1fr);
+	max-width: 1080px;
+	margin: 0 auto;
+	height: 100%;
+}
+
+/* --- Rail ---------------------------------------------------------------- */
+.rail {
+	background: var(--bg-base);
+	border-right: 1px solid var(--border-subtle);
+	padding: 12px 10px 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 10px 14px;
+	border-bottom: 1px solid var(--border-subtle);
+	color: var(--text-secondary);
+}
+.brand__mark { color: var(--amber); flex-shrink: 0; }
+.brand__text { display: flex; flex-direction: column; gap: 1px; line-height: 1.15; }
+.brand__title {
+	font-size: 13.5px;
+	font-weight: 600;
+	color: var(--text-primary);
+	letter-spacing: 0.005em;
+}
+.brand__sub {
+	font-family: var(--font-mono);
+	font-size: 9px;
+	color: var(--text-tertiary);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+}
+
+.rail__nav {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1;
+}
+.rail__item {
+	all: unset;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 10px;
+	min-height: 34px;
+	border-radius: var(--radius-sm);
+	color: var(--text-secondary);
+	cursor: pointer;
+	font-size: 12.5px;
+	transition: background 140ms var(--ease), color 140ms var(--ease);
+	position: relative;
+}
+.rail__item:focus-visible {
+	outline: 2px solid var(--amber);
+	outline-offset: -2px;
+}
+.rail__item svg { color: var(--text-tertiary); transition: color 140ms var(--ease); flex-shrink: 0; }
+.rail__item:hover {
+	background: var(--bg-raised);
+	color: var(--text-primary);
+}
+.rail__item:hover svg { color: var(--text-secondary); }
+.rail__item.is-active {
+	background: var(--amber-dim);
+	color: var(--amber);
+	font-weight: 500;
+}
+.rail__item.is-active svg { color: var(--amber); }
+.rail__item.is-active::before {
+	content: '';
+	position: absolute;
+	left: -12px; top: 9px; bottom: 9px;
+	width: 2px;
+	background: var(--amber);
+	border-radius: 2px;
+	box-shadow: 0 0 8px var(--amber-glow);
+}
+
+.rail__foot {
+	padding: 10px;
+	border-top: 1px solid var(--border-subtle);
+	color: var(--text-tertiary);
+}
+.rail__foot-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--font-mono);
+	font-size: 10px;
+	letter-spacing: 0.04em;
+}
+.rail__dot {
+	width: 6px; height: 6px;
+	border-radius: 50%;
+	background: var(--emerald);
+	box-shadow: 0 0 8px var(--emerald);
+	flex-shrink: 0;
+	transition: background 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+.rail__foot-row.is-saving .rail__dot {
+	background: var(--amber);
+	box-shadow: 0 0 10px var(--amber-glow);
+	animation: pulseDot 800ms ease-out;
+}
+.rail__foot-row.is-saving > span:last-child {
+	color: var(--amber);
+}
+@keyframes pulseDot {
+	0%   { transform: scale(1); }
+	30%  { transform: scale(1.6); }
+	100% { transform: scale(1); }
+}
+
+/* --- Stage --------------------------------------------------------------- */
+.stage {
+	padding: 14px 22px 0px;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+.panel { display: none; animation: panelIn 220ms var(--ease); }
+.panel.is-active {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
+/* The dark cards inside each active panel grow to fill the remaining
+   vertical space, so every tab has the same outer height even when its
+   form/list is short. Negative bottom margin pulls the card past the
+   stage's box-shadow zone so it sits flush with the popup floor. */
+.featurelist, .card {
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	margin-bottom: -12px;
+}
+.card__body { flex: 1 1 auto; min-height: 0; }
+@keyframes panelIn {
+	from { opacity: 0; transform: translateY(4px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel__head {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 20px;
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid var(--border-subtle);
+}
+.panel__eyebrow {
+	font-family: var(--font-display);
+	font-size: 9.5px;
+	font-weight: 700;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--amber);
+	margin-bottom: 4px;
+}
+.panel__title {
+	font-size: 18px;
+	font-weight: 600;
+	letter-spacing: -0.012em;
+	margin: 0 0 4px;
+	color: var(--text-primary);
+	line-height: 1.1;
+}
+.panel__lede {
+	color: var(--text-secondary);
+	max-width: 70ch;
+	margin: 0;
+	font-size: 11.5px;
+	line-height: 1.4;
+}
+.panel__lede em {
+	font-style: normal;
+	color: var(--amber);
+	font-weight: 500;
+}
+
+.panel__stat {
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+	gap: 6px;
+	padding: 6px 10px;
+	background: var(--amber-dim);
+	border: 1px solid rgba(245, 166, 35, 0.22);
+	border-radius: var(--radius-sm);
+}
+.panel__stat-value {
+	font-family: var(--font-mono);
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--amber-hi);
+	letter-spacing: 0.01em;
+	line-height: 1;
+}
+.panel__stat-label {
+	font-family: var(--font-mono);
+	font-size: 9px;
+	color: var(--text-secondary);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+}
+
+/* --- Feature list -------------------------------------------------------- */
+.featurelist {
+	background: var(--bg-surface);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-card);
+	overflow: hidden;
+	transition: border-color 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+.featurelist:hover, .featurelist:focus-within {
+	border-color: var(--border-visible);
+	box-shadow: var(--shadow-card-hi);
+}
+
+.feature {
+	display: grid;
+	/* Toggle leads, meta fills the rest. Single-line rows so all features
+	   fit in the popup's 600px height; description moves to native tooltip
+	   via the `title` attribute applied in options.js. */
+	grid-template-columns: auto 1fr;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 14px;
+	cursor: pointer;
+	transition: background 140ms var(--ease);
+	border-bottom: 1px solid var(--border-subtle);
+	/* Rows grow proportionally so the dark featurelist box stays filled
+	   regardless of how many features are registered. */
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.feature:last-child { border-bottom: none; }
+.feature:hover { background: var(--bg-raised); }
+
+.feature .meta { grid-column: 2; min-width: 0; }
+.feature .meta .label {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--text-primary);
+	letter-spacing: 0.005em;
+	line-height: 1.25;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+/* Hide the long description in the compact 600px popup. The full text is
+   preserved on the .feature element's title attribute (native tooltip). */
+.feature .meta .desc { display: none; }
+/* Small mono tag next to a feature label — appended by options.js based on
+   the feature's id (no model change). Used to signal scope without adding
+   another row of UI. */
+.feature .tag {
+	font-family: var(--font-mono);
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	padding: 2px 6px;
+	border-radius: 3px;
+	background: var(--bg-input);
+	color: var(--text-tertiary);
+	border: 1px solid var(--border-subtle);
+	line-height: 1.4;
+}
+.feature .tag--hot {
+	background: var(--emerald-dim);
+	color: var(--emerald);
+	border-color: rgba(52, 211, 153, 0.2);
+}
+.feature .tag--page {
+	background: rgba(96, 165, 250, 0.1);
+	color: var(--blue);
+	border-color: rgba(96, 165, 250, 0.22);
+}
+.feature .meta .desc {
+	color: var(--text-secondary);
+	font-size: 12.5px;
+	margin-top: 5px;
+	line-height: 1.55;
+	max-width: 72ch;
+}
+
+/* Toggle switch (custom on native checkbox) */
+.feature input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	grid-column: 1;
+	/* Sit on the label's cap line, not the row's top padding. */
+	margin-top: 2px;
+	width: 40px;
+	height: 22px;
+	background: var(--bg-input);
+	border: 1px solid var(--border-visible);
+	border-radius: 999px;
+	cursor: pointer;
+	position: relative;
+	margin: 0;
+	transition: background 160ms var(--ease), border-color 160ms var(--ease);
+	flex-shrink: 0;
+}
+.feature input[type="checkbox"]::after {
+	content: '';
+	position: absolute;
+	top: 2px; left: 2px;
+	width: 16px; height: 16px;
+	border-radius: 50%;
+	background: var(--text-tertiary);
+	transition: transform 200ms var(--ease), background 200ms var(--ease);
+}
+.feature input[type="checkbox"]:checked {
+	background: var(--amber-dim);
+	border-color: rgba(245, 166, 35, 0.35);
+}
+.feature input[type="checkbox"]:checked::after {
+	transform: translateX(18px);
+	background: var(--amber);
+	box-shadow: 0 0 8px var(--amber-glow);
+}
+.feature input[type="checkbox"]:focus-visible {
+	outline: 2px solid var(--amber);
+	outline-offset: 2px;
+}
+
+/* --- Card (used for form panels) ----------------------------------------- */
+.card {
+	background: var(--bg-surface);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-card);
+	overflow: hidden;
+	transition: border-color 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+.card:hover, .card:focus-within {
+	border-color: var(--border-visible);
+	box-shadow: var(--shadow-card-hi);
+}
+.card__head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 9px 16px;
+	border-bottom: 1px solid var(--border-subtle);
+	background: var(--bg-raised);
+}
+.card__head-label {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	color: var(--text-tertiary);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	flex-shrink: 0;
+}
+.card__body { padding: 4px 16px; }
+
+/* --- Form rows ----------------------------------------------------------- */
+.form { display: flex; flex-direction: column; }
+
+.formfield, .lc-row, .lc-server-row {
+	display: flex;
+	gap: 16px;
+	align-items: center;
+	padding: 7px 0;
+	border-bottom: 1px solid var(--border-subtle);
+	min-height: 34px;
+	/* Form rows expand to fill the card body — same intent as .feature
+	   above: keep the dark box visually intentional. */
+	flex: 1 1 auto;
+}
+.form > :last-child { border-bottom: none; }
+.formfield > .formfield__label,
+.lc-row > label,
+.lc-server-row > label {
+	flex: 0 0 180px;
+	font-size: 13px;
+	color: var(--text-primary);
+	font-weight: 500;
+}
+.formfield > .formfield__control { flex: 1 1 auto; min-width: 0; max-width: 320px; }
+.lc-server-row { border-top: 1px solid var(--border-subtle); margin-top: 4px; }
+
+/* Checkbox row */
+.lc-row--check {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	cursor: pointer;
+	color: var(--text-secondary);
+	font-size: 13px;
+}
+.lc-row--check input[type="checkbox"] {
+	appearance: none;
+	-webkit-appearance: none;
+	flex: 0 0 40px;
+	width: 40px;
+	height: 22px;
+	background: var(--bg-input);
+	border: 1px solid var(--border-visible);
+	border-radius: 999px;
+	cursor: pointer;
+	margin: 0;
+	position: relative;
+	transition: background 160ms var(--ease), border-color 160ms var(--ease);
+}
+.lc-row--check input[type="checkbox"]::after {
+	content: '';
+	position: absolute;
+	top: 2px; left: 2px;
+	width: 16px; height: 16px;
+	border-radius: 50%;
+	background: var(--text-tertiary);
+	transition: transform 200ms var(--ease), background 200ms var(--ease);
+}
+.lc-row--check input[type="checkbox"]:checked {
+	background: var(--amber-dim);
+	border-color: rgba(245, 166, 35, 0.35);
+}
+.lc-row--check input[type="checkbox"]:checked::after {
+	transform: translateX(18px);
+	background: var(--amber);
+	box-shadow: 0 0 8px var(--amber-glow);
+}
+.lc-row--check input[type="checkbox"]:focus-visible {
+	outline: 2px solid var(--amber);
+	outline-offset: 3px;
+}
+
+/* Inputs & selects --------------------------------------------------------
+   - Native select chevron is replaced with a custom amber chevron rendered
+     as an inline SVG background (matches NextSettlementCalc).
+   - Native number-input spinners are hidden — they jump on hover and look
+     misaligned at any compact size. Users can still type or use ↑/↓ keys.
+   - Slightly smaller padding + font for a tighter, more refined feel.
+   ----------------------------------------------------------------------------*/
+.select,
+.lc-row select,
+.lc-server-row select,
+.card__head select,
+input[type="number"].lc-num,
+.lc-row input[type="number"],
+.formfield input,
+.formfield select {
+	background: var(--bg-input);
+	color: var(--text-primary);
+	border: 1px solid var(--border-visible);
+	border-radius: var(--radius-sm);
+	padding: 5px 9px;
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	outline: none;
+	transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
+	min-width: 0;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Custom select chevron */
+.select,
+.lc-row select,
+.lc-server-row select,
+.card__head select,
+.formfield select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%23f5a623" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>');
+	background-repeat: no-repeat;
+	background-position: right 8px center;
+	background-size: 11px;
+	padding-right: 26px;
+	cursor: pointer;
+}
+
+/* Select option styling — native dropdown rows respect color scheme so they
+   match the dark theme without forcing a JS rewrite to a custom listbox. */
+select option {
+	background: var(--bg-raised);
+	color: var(--text-primary);
+}
+
+/* Hide native number-input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.card__head select { flex: 1; max-width: 240px; }
+.lc-row select, .lc-server-row select, .select { width: 100%; max-width: 240px; }
+.lc-row input[type="number"], input.lc-num { width: 78px; text-align: right; }
+
+.select:focus,
+.lc-row select:focus,
+.card__head select:focus,
+input.lc-num:focus,
+.lc-row input[type="number"]:focus,
+.formfield input:focus,
+.formfield select:focus {
+	border-color: rgba(245, 166, 35, 0.5);
+	box-shadow: 0 0 0 3px var(--amber-dim);
+}
+
+.lc-row input[type="number"] + input[type="number"] { margin-left: 8px; }
+
+/* Buttons */
+/* Skip Ads rows expand to fill the card height proportionally, while the
+   reset button keeps its fixed 10px gap above. Same separation ratio as
+   the rest of the form. */
+#tab-skip-ads .lc-row,
+#tab-skip-ads .formfield {
+	flex: 1 1 auto;
+	min-height: 34px;
+	padding: 4px 0;
+}
+
+/* --- Counter-attack tab ------------------------------------------------- */
+/* The counter-attack output (status + timeline + minimap + numeric rows)
+   is taller than the 560px popup floor. When this tab is active, let
+   body grow past the pinned height and let the card auto-size to its
+   content instead of flex-filling a clamped row. */
+#tab-counter .card { overflow: visible; }
+/* Tactical-console panel head: small amber diamond and a faded sweep trail
+   echo the status banner and form-section accents. */
+#tab-counter .panel__eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+#tab-counter .panel__eyebrow::before {
+	content: '';
+	width: 6px; height: 6px;
+	background: var(--amber);
+	transform: rotate(45deg);
+	box-shadow: 0 0 6px var(--amber-glow);
+}
+#tab-counter .panel__eyebrow::after {
+	content: '';
+	width: 64px;
+	height: 1px;
+	background: linear-gradient(90deg,
+		rgba(245, 166, 35, 0.45),
+		transparent);
+	margin-left: 4px;
+}
+body:has(#tab-counter.is-active) {
+	height: auto; min-height: 560px;
+	width: auto; min-width: 800px; max-width: 1400px;
+}
+body:has(#tab-counter.is-active) .app {
+	height: auto; min-height: 560px; max-width: none;
+}
+#tab-counter.is-active { flex: 0 0 auto; }
+#tab-counter .card { flex: 0 0 auto; margin-bottom: 0; }
+#tab-counter .card__body { flex: 0 0 auto; }
+.ca {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 10px 14px 12px;
+}
+.ca__row--shared {
+	display: grid;
+	/* target is sized for "(-XXX|-XXX)" only; arrival flexes wide enough
+	   to fit "dd/mm/yyyy hh:mm:ss" + the native picker icon. */
+	grid-template-columns: 120px minmax(220px, 1fr) 70px 90px;
+	gap: 10px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--border-subtle);
+}
+.ca__armies {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+}
+.ca__army {
+	all: unset;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 6px 10px;
+	padding: 8px 10px 10px;
+	background: var(--bg-raised);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-sm);
+}
+.ca__legend {
+	grid-column: 1 / -1;
+	font-family: var(--font-mono);
+	font-size: 10px;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--amber);
+	padding: 0 0 4px;
+	margin-bottom: 2px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.ca__legend::before {
+	content: '';
+	width: 6px; height: 6px;
+	background: var(--amber);
+	transform: rotate(45deg);
+	box-shadow: 0 0 6px var(--amber-glow);
+}
+.ca__legend::after {
+	content: '';
+	flex: 1;
+	height: 1px;
+	background: linear-gradient(90deg,
+		rgba(245, 166, 35, 0.35),
+		rgba(245, 166, 35, 0.05) 60%,
+		transparent);
+}
+.ca__field {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+	cursor: pointer;
+}
+.ca__label {
+	font-family: var(--font-mono);
+	font-size: 9.5px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+.ca__field input,
+.ca__field select {
+	width: 100%;
+	max-width: none;
+	padding: 4px 8px;
+}
+/* "My village" picker — sits in the army grid as a normal field cell,
+   matching the layout of Coords/Slowest unit/etc. Populated from
+   chrome.storage.local by the content script that scrapes the sidebar.
+   The amber border distinguishes it from the static config selects. */
+.ca__field--village select { border-color: rgba(245, 166, 35, 0.35); }
+.ca__field--village select:hover { background: var(--amber-dim); }
+.ca__field .ca__coords,
+.ca__field .ca__time { font-family: var(--font-mono); text-align: left; }
+.ca__field input.lc-num { text-align: left; }
+
+.ca__out {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 8px 10px;
+	border: 1px solid var(--border-subtle);
+	border-left: 2px solid var(--amber);
+	border-radius: var(--radius-sm);
+	background:
+		radial-gradient(ellipse at top right, rgba(245, 166, 35, 0.045), transparent 60%),
+		var(--bg-base);
+	position: relative;
+}
+/* Faint scanline texture — the kind that makes a black box feel like a screen. */
+.ca__out--rich::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: repeating-linear-gradient(180deg,
+		rgba(255, 255, 255, 0.015) 0 1px,
+		transparent 1px 4px);
+	border-radius: inherit;
+	mix-blend-mode: screen;
+}
+.ca__out-row {
+	display: grid;
+	grid-template-columns: 110px auto 1fr;
+	gap: 10px;
+	align-items: baseline;
+	font-size: 12px;
+}
+.ca__out-row--hl .ca__out-val {
+	color: var(--amber);
+	font-weight: 600;
+}
+.ca__out-key {
+	font-family: var(--font-mono);
+	font-size: 9.5px;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+.ca__out-val {
+	font-family: var(--font-mono);
+	font-size: 13px;
+	color: var(--text-primary);
+	letter-spacing: 0.02em;
+}
+.ca__out-sub {
+	font-family: var(--font-mono);
+	font-size: 10.5px;
+	color: var(--text-secondary);
+}
+.ca__hint {
+	font-size: 12px;
+	color: var(--text-tertiary);
+	padding: 6px 0;
+}
+
+/* --- Counter-attack: reworked output (split: answer + vertical sequence) -
+   Two-column plan — the answer hero on the left, a vertical event rail on
+   the right. A stacked rail can never overlap, so the old horizontal
+   timeline's collision problem is gone. Block container so the inner
+   sections don't get shrunk by the parent flex column. */
+.ca__out--rich {
+	display: block;
+	gap: 0;
+	padding: 0;
+	flex: 0 0 auto;
+	min-height: 0;
+}
+.ca__plan {
+	display: grid;
+	grid-template-columns: minmax(210px, 0.85fr) 1.15fr;
+}
+@media (max-width: 560px) {
+	.ca__plan { grid-template-columns: 1fr; }
+}
+
+/* Left column — the answer. Hero countdown is the dominant element; the
+   accent border + countdown color shift with status (ok/warn/bad). */
+.ca__answer {
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+	justify-content: center;
+	padding: 20px 22px;
+	border-right: 1px solid var(--border-subtle);
+	border-left: 3px solid var(--amber);
+	background:
+		linear-gradient(180deg, rgba(255, 184, 77, 0.045), transparent 55%),
+		repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px),
+		var(--bg-raised);
+}
+@media (max-width: 560px) {
+	.ca__answer { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+}
+.ca__answer-label {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 500;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: var(--text-secondary);
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+	line-height: 1.2;
+}
+.ca__answer-label::before {
+	content: '';
+	width: 8px; height: 8px;
+	background: var(--amber);
+	transform: rotate(45deg);
+	box-shadow: 0 0 10px var(--amber-glow);
+	flex-shrink: 0;
+}
+.ca__countdown {
+	font-family: var(--font-mono);
+	font-size: 44px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	color: var(--amber);
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	text-shadow: 0 0 28px rgba(245, 166, 35, 0.35);
+}
+.ca__answer-note {
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	letter-spacing: 0.04em;
+	color: var(--text-secondary);
+	line-height: 1.4;
+}
+.ca__answer--ok    { border-left-color: var(--emerald); }
+.ca__answer--warn  { border-left-color: var(--amber-hi); }
+.ca__answer--bad   { border-left-color: var(--rose); }
+.ca__answer--ok   .ca__answer-label::before { background: var(--emerald); box-shadow: 0 0 10px rgba(52, 211, 153, 0.5); }
+.ca__answer--bad  .ca__answer-label::before { background: var(--rose); box-shadow: 0 0 10px rgba(251, 113, 133, 0.55); }
+.ca__answer--ok    .ca__countdown { color: var(--emerald); text-shadow: 0 0 28px rgba(52, 211, 153, 0.35); }
+.ca__answer--warn  .ca__countdown { color: var(--amber-hi); text-shadow: 0 0 28px rgba(255, 184, 77, 0.45); }
+.ca__answer--bad   .ca__countdown { color: var(--rose); text-shadow: 0 0 28px rgba(251, 113, 133, 0.4); animation: ca-pulse 1.8s ease-in-out infinite; }
+@keyframes ca-pulse {
+	0%, 100% { opacity: 1; }
+	50%      { opacity: 0.78; }
+}
+
+/* Right column — vertical event rail. Each row: [time] [dot+line] [body].
+   The connector line is omitted on the last row by the renderer. */
+.ca__seq {
+	display: flex;
+	flex-direction: column;
+	padding: 16px 20px 14px;
+}
+.ca__seq-head {
+	font-family: var(--font-mono);
+	font-size: 9px;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+	margin-bottom: 6px;
+}
+.ca__seq-row {
+	display: grid;
+	grid-template-columns: 72px 20px 1fr;
+	align-items: start;
+	column-gap: 9px;
+}
+.ca__seq-time {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: var(--text-primary);
+	text-align: right;
+	padding-top: 6px;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.ca__seq-rail {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	align-self: stretch;
+}
+.ca__seq-dot {
+	width: 11px; height: 11px;
+	margin-top: 7px;
+	border-radius: 50%;
+	background: var(--text-tertiary);
+	flex-shrink: 0;
+}
+.ca__seq-line {
+	width: 2px;
+	flex: 1;
+	min-height: 18px;
+	background: var(--border-visible);
+}
+.ca__seq-body {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 4px 0 16px;
+}
+.ca__seq-row:last-child .ca__seq-body { padding-bottom: 0; }
+.ca__seq-label {
+	font-family: var(--font-mono);
+	font-size: 9.5px;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text-secondary);
+	line-height: 1.2;
+}
+.ca__seq-desc {
+	font-size: 11px;
+	color: var(--text-tertiary);
+	line-height: 1.3;
+}
+/* Per-event coloring of dot, connector and label. */
+.ca__seq-row[data-kind="hit-us"]  .ca__seq-dot {
+	background: transparent;
+	box-shadow: 0 0 0 2px var(--rose), inset 0 0 0 1px rgba(251, 113, 133, 0.4);
+}
+.ca__seq-row[data-kind="hit-us"]  .ca__seq-label { color: var(--rose); }
+.ca__seq-row[data-kind="counter"] .ca__seq-dot {
+	background: var(--amber-hi);
+	box-shadow: 0 0 0 1px var(--amber-glow), 0 0 12px var(--amber-glow);
+}
+.ca__seq-row[data-kind="counter"] .ca__seq-label { color: var(--amber); }
+.ca__seq-row[data-kind="return"]  .ca__seq-dot {
+	background: var(--emerald);
+	box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.5), 0 0 8px rgba(52, 211, 153, 0.35);
+}
+.ca__seq-row[data-kind="return"]  .ca__seq-label,
+.ca__seq-row[data-kind="return"]  .ca__seq-time { color: var(--emerald); font-weight: 600; }
+.ca__seq-row[data-kind="counter"] .ca__seq-time { color: var(--amber-hi); font-weight: 600; }
+
+/* Bottom raw strip — grid mirrors .ca__plan columns so the cell divider
+   lines up exactly with the answer/sequence boundary above. */
+.ca__raw {
+	display: grid;
+	grid-template-columns: minmax(210px, 0.85fr) 1.15fr;
+	border-top: 1px solid var(--border-subtle);
+	background: rgba(0, 0, 0, 0.14);
+	font-family: var(--font-mono);
+	font-size: 11px;
+	color: var(--text-secondary);
+}
+.ca__raw > span {
+	padding: 10px 20px;
+}
+.ca__raw > span:first-child { padding-left: 25px; }
+.ca__raw > span + span { border-left: 1px solid var(--border-subtle); margin-left: -2px; padding-left: 22px; }
+.ca__raw b {
+	color: var(--text-tertiary);
+	font-weight: 500;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	font-size: 9.5px;
+}
+@media (max-width: 560px) {
+	.ca__raw { grid-template-columns: 1fr; }
+	.ca__raw > span + span { border-left: none; border-top: 1px solid var(--border-subtle); }
+}
+
+.lc-reset {
+	all: unset;
+	align-self: flex-start;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	/* 10px gap above the button: sits right under the last setting row. */
+	margin: 10px 0 4px;
+	padding: 6px 12px;
+	font-family: var(--font-mono);
+	font-size: 10.5px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text-secondary);
+	border: 1px solid var(--border-visible);
+	border-radius: var(--radius-sm);
+	background: var(--bg-raised);
+	cursor: pointer;
+	transition: background 140ms var(--ease), color 140ms var(--ease),
+		border-color 140ms var(--ease);
+}
+.lc-reset:hover {
+	background: var(--amber-dim);
+	color: var(--amber);
+	border-color: rgba(245, 166, 35, 0.35);
+}
+.lc-reset:focus-visible {
+	outline: 2px solid var(--amber);
+	outline-offset: 2px;
+}
+/* Tip card — sits at the bottom of each panel to fill the void with useful
+   context. Mono key + body explanation, amber dot anchor. */
+.tip {
+	margin-top: 14px;
+	padding: 10px 14px;
+	background: var(--bg-surface);
+	border: 1px solid var(--border-subtle);
+	border-left: 2px solid var(--amber);
+	border-radius: var(--radius-sm);
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	color: var(--text-secondary);
+	font-size: 12px;
+	line-height: 1.5;
+}
+.tip__key {
+	font-family: var(--font-mono);
+	font-size: 9.5px;
+	color: var(--amber);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	flex-shrink: 0;
+	padding-top: 1px;
+}
+.tip__body { min-width: 0; }
+.tip__body kbd {
+	display: inline-block;
+	padding: 1px 6px;
+	margin: 0 1px;
+	background: var(--bg-input);
+	border: 1px solid var(--border-visible);
+	border-radius: 3px;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	color: var(--text-primary);
+}
+
+/* Empty state */
+.lc-empty {
+	margin: 14px 0 6px;
+	padding: 22px;
+	color: var(--text-secondary);
+	font-size: 13px;
+	background: var(--bg-raised);
+	border: 1px dashed var(--border-visible);
+	border-radius: var(--radius);
+	line-height: 1.6;
+	text-align: center;
+}
+
+/* Override notice in the "Default (all servers)" view: left-aligned and
+   amber-toned, since it explains why a setting looks inert rather than
+   filling an empty panel. */
+.lc-override {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	padding: 14px 16px;
+	text-align: left;
+	color: var(--amber);
+	border-style: solid;
+	border-color: rgba(245, 166, 35, 0.35);
+	background: var(--amber-dim);
+	font-size: 12px;
+}
+.lc-override[hidden] { display: none; }
+.lc-override .lc-reset { margin: 2px 0 0; }
+
+::selection { background: var(--amber); color: var(--bg-base); }
+
+/* --- Responsive ----------------------------------------------------------
+   Three breakpoints to match the canonical scale:
+   • ≥1024px: full desktop (default).
+   • 768–1023px: tablet — keep rail but tighter columns.
+   • ≤767px: popup-width — collapse rail into a horizontal strip.
+   --------------------------------------------------------------------------*/
+@media (max-width: 1023px) {
+	.app { grid-template-columns: 200px minmax(0, 1fr); max-width: none; }
+	.stage { padding: 24px 24px 32px; }
+}
+
+@media (max-width: 700px) {
+	body { min-width: 520px; }
+	.app {
+		grid-template-columns: 1fr;
+		max-width: none;
+	}
+	.rail {
+		position: static;
+		height: auto;
+		flex-direction: row;
+		align-items: center;
+		gap: 14px;
+		padding: 10px 14px;
+		border-right: none;
+		border-bottom: 1px solid var(--border-subtle);
+	}
+	.brand { padding: 0; border-bottom: none; flex-shrink: 0; }
+	.rail__nav { flex-direction: row; flex: 1; gap: 4px; overflow-x: auto; }
+	.rail__item {
+		padding: 8px 12px;
+		min-height: 36px;
+	}
+	.rail__item.is-active::before { display: none; }
+	.rail__foot { display: none; }
+	.stage { padding: 22px 18px 32px; }
+	.panel__head { flex-direction: column; gap: 16px; }
+	.panel__stat { align-self: flex-start; }
+	.formfield > .formfield__label,
+	.lc-row > label,
+	.lc-server-row > label { flex: 0 0 150px; font-size: 12.5px; }
+}
+
+@media (max-width: 480px) {
+	body { min-width: 360px; }
+	.stage { padding: 16px 12px 24px; }
+	.feature { padding: 12px 14px; }
+	.card__head, .card__body { padding-left: 12px; padding-right: 12px; }
+	.formfield > .formfield__label,
+	.lc-row > label,
+	.lc-server-row > label { flex: 0 0 130px; font-size: 12px; }
+	.panel__title { font-size: 20px; }
+}
+

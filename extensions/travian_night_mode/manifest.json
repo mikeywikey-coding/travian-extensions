@@ -1,0 +1,50 @@
+{
+	"manifest_version": 3,
+	"name": "Travian Night Mode",
+	"version": "2.0",
+	"description": "A polished dark theme overlay for Travian: Legends. Persistent on/off toggle via popup.",
+	"author": "miguelrocha1511@gmail.com",
+	"icons": {
+		"48": "icon.png",
+		"96": "icon.png"
+	},
+	"permissions": ["storage"],
+	"host_permissions": [
+		"*://*.travian.com/*",
+		"*://*.travian.de/*",
+		"*://*.travian.us/*",
+		"*://*.travian.fr/*",
+		"*://*.travian.it/*",
+		"*://*.travian.cz/*",
+		"*://*.travian.pl/*",
+		"*://*.travian.ru/*",
+		"*://*.travian.tr/*",
+		"*://*.travian.ae/*",
+		"*://*.travian.net/*",
+		"*://*.travian.co.uk/*"
+	],
+	"action": {
+		"default_icon": "icon.png",
+		"default_popup": "popup.html"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"*://*.travian.com/*",
+				"*://*.travian.de/*",
+				"*://*.travian.us/*",
+				"*://*.travian.fr/*",
+				"*://*.travian.it/*",
+				"*://*.travian.cz/*",
+				"*://*.travian.pl/*",
+				"*://*.travian.ru/*",
+				"*://*.travian.tr/*",
+				"*://*.travian.ae/*",
+				"*://*.travian.net/*",
+				"*://*.travian.co.uk/*"
+			],
+			"js": ["content.js"],
+			"run_at": "document_start"
+		}
+	]
+}

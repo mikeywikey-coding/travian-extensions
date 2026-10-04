@@ -1,0 +1,55 @@
+{
+	"manifest_version": 3,
+	"name": "Travian Rank Tracker",
+	"version": "4.8.0",
+	"description": "Tracks Top 10 ranks, General stats, and Village Strength.",
+	"permissions": [
+		"cookies",
+		"storage",
+		"alarms",
+		"activeTab",
+		"scripting",
+		"unlimitedStorage",
+		"downloads"
+	],
+	"host_permissions": [
+		"*://*.travian.com/*",
+		"*://*.travian.org/*",
+		"*://*.travian.net/*",
+		"*://*.travian.us/*",
+		"*://*.travian.de/*"
+	],
+	"background": {
+		"service_worker": "background.js",
+		"scripts": ["utils.js", "background.js"]
+	},
+	"action": {
+		"default_popup": "popup.html",
+		"default_title": "Check Ranks",
+		"default_icon": {
+			"16": "icon128.png",
+			"32": "icon128.png",
+			"48": "icon128.png",
+			"128": "icon128.png"
+		}
+	},
+	"icons": {
+		"16": "icon128.png",
+		"32": "icon128.png",
+		"48": "icon128.png",
+		"128": "icon128.png"
+	},
+	"content_scripts": [
+		{
+			"matches": ["*://*.travian.com/*", "*://*.travian.org/*", "*://*.travian.net/*", "*://*.travian.us/*", "*://*.travian.de/*"],
+			"js": ["raid-income-bridge.js"],
+			"run_at": "document_end"
+		}
+	],
+	"web_accessible_resources": [
+		{
+			"resources": ["chart.js"],
+			"matches": ["<all_urls>"]
+		}
+	]
+}

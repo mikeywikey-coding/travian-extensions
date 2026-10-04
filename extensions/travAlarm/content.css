@@ -1,0 +1,1113 @@
+/* =========================================
+   TRAVIAN WATCHMAN — GROUPED DASHBOARD
+   ========================================= */
+
+/* -----------------------------------------
+   FONTS & CUSTOM PROPERTIES
+   ----------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap");
+
+:root {
+  /* Obsidian Glass — cool blue-gray base */
+  --tw-bg: rgb(29, 29, 32);
+  --tw-surface: #18181b;
+  --tw-surface-hover: #1f1f23;
+  --tw-border: rgba(255, 255, 255, 0.06);
+  --tw-border-accent: rgba(255, 255, 255, 0.1);
+  --tw-text: #f0f0f2;
+  --tw-text-dim: #8b8b95;
+  --tw-accent: #f5a623;
+  --tw-accent-glow: rgba(245, 166, 35, 0.12);
+  --tw-timer: #34d399;
+  --tw-done: #ef4444;
+
+  /* Alarm type hues */
+  --tw-c-pink: #f472b6;
+  --tw-c-purple: #a78bfa;
+  --tw-c-gold: #f5a623;
+  --tw-c-red: #ef4444;
+  --tw-c-cyan: #22d3ee;
+  --tw-c-green: #34d399;
+  --tw-c-emerald: #10b981;
+  --tw-c-blue: #60a5fa;
+  --tw-c-orange: #f97316;
+  --tw-c-amber: #fbbf24;
+  --tw-c-teal: #2dd4bf;
+  --tw-c-lime: #a3e635;
+
+  /* Shared with NextSettlementCalc */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--tw-border);
+}
+
+/* -----------------------------------------
+   ANIMATIONS
+   ----------------------------------------- */
+@keyframes tw-flashing-red {
+  0% {
+    color: var(--tw-done);
+    text-shadow: 0 0 10px rgba(230, 57, 70, 0.6);
+  }
+  50% {
+    color: #7f1d1d;
+    text-shadow: 0 0 3px rgba(230, 57, 70, 0.15);
+  }
+  100% {
+    color: var(--tw-done);
+    text-shadow: 0 0 10px rgba(230, 57, 70, 0.6);
+  }
+}
+
+@keyframes tw-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tw-ring-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+}
+
+@keyframes tw-count-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.flashing-alarm {
+  animation: tw-flashing-red 0.7s infinite;
+  font-weight: 700 !important;
+}
+
+/* Section header flashing when ALL alarms done */
+.tw-section-header.is-all-done .tw-section-label {
+  animation: tw-flashing-red 0.7s infinite;
+}
+/* Done badge flashes like .flashing-alarm whenever any alarm is done */
+.tw-section-header.has-done .tw-section-done-badge {
+  animation: tw-flashing-red 0.7s infinite;
+  font-weight: 700 !important;
+}
+
+/* -----------------------------------------
+   WIDGET CONTAINER
+   ----------------------------------------- */
+#_tw-w {
+  position: fixed;
+  right: 5px;
+  top: 146px;
+  width: 224px;
+  height: fit-content;
+  max-height: 750px;
+  z-index: 9999;
+  background: var(--tw-bg);
+  border-radius: 14px;
+  border: 1px solid var(--tw-border);
+  box-shadow:
+    var(--shadow-card),
+    0 20px 50px rgba(0, 0, 0, 0.6);
+  font-family: verdana;
+  pointer-events: auto;
+  overflow: hidden;
+  transition: width 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+/* -----------------------------------------
+   TITLE BAR
+   ----------------------------------------- */
+.tw-titlebar {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background: linear-gradient(180deg, #1e1e22 0%, var(--tw-bg) 100%);
+  border-bottom: 1px solid var(--tw-border);
+  user-select: none;
+}
+
+.tw-title {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #f4f4f4;
+  text-shadow: 0 0 10px var(--tw-accent-glow);
+}
+
+.tw-alarm-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--tw-bg);
+  background: var(--tw-accent);
+  border-radius: 8px;
+  min-width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  padding: 0 4px;
+}
+
+.tw-alarm-count.is-updated {
+  animation: tw-count-pop 0.25s ease;
+}
+
+.tw-titlebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.tw-icon-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+  padding: 0;
+}
+.tw-icon-btn:hover {
+  background: var(--tw-surface-hover);
+}
+.tw-icon-btn .tw-ui-icon {
+  width: 14px;
+  height: 14px;
+  fill: var(--tw-text-dim);
+  transition: fill 0.12s ease;
+}
+.tw-icon-btn:hover .tw-ui-icon {
+  fill: var(--tw-text);
+}
+
+/* -----------------------------------------
+   MINIMIZED STATE
+   ----------------------------------------- */
+.is-minimized {
+  width: 200px !important;
+}
+.is-minimized .tw-body {
+  display: none;
+}
+.is-minimized .tw-toolbar {
+  display: none;
+}
+.is-minimized .tw-ring-strip {
+  display: flex !important;
+}
+
+/* When minimized, ring strip moves into titlebar area */
+.is-minimized .tw-titlebar {
+  border-bottom: none;
+}
+
+/* -----------------------------------------
+   RING STRIP
+   ----------------------------------------- */
+.tw-ring-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 0px;
+  background: var(--tw-surface);
+  border-bottom: 1px solid var(--tw-border);
+  min-height: 28px;
+  flex-wrap: wrap;
+}
+
+.tw-ring-strip:empty {
+  display: none;
+}
+
+.tw-ring {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  position: relative;
+}
+.tw-ring:hover {
+  transform: scale(1.15);
+}
+
+.tw-ring-bg {
+  fill: none;
+  stroke: var(--tw-border);
+  stroke-width: 3;
+}
+.tw-ring-fill {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+.tw-ring-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  dominant-baseline: central;
+  text-anchor: middle;
+}
+
+.tw-ring.is-done .tw-ring-fill {
+  animation: tw-ring-pulse 1s infinite;
+}
+
+/* -----------------------------------------
+   BODY (sections container)
+   ----------------------------------------- */
+.tw-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* -----------------------------------------
+   SECTIONS
+   ----------------------------------------- */
+#_tw-tl {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.tw-section {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  border-bottom: 1px solid var(--tw-border);
+}
+.tw-section:last-child {
+  border-bottom: none;
+}
+.tw-section.is-last-expanded {
+  flex: 1;
+  min-height: 0;
+}
+
+.tw-section-header {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  cursor: pointer;
+  background: var(--tw-surface);
+  transition: background 0.12s ease;
+  user-select: none;
+  gap: 6px;
+}
+.tw-section-header:hover {
+  background: var(--tw-surface-hover);
+}
+
+.tw-section-chevron {
+  width: 10px;
+  height: 10px;
+  fill: var(--tw-text-dim);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.tw-section.is-collapsed .tw-section-chevron {
+  transform: rotate(-90deg);
+}
+
+.tw-section-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.tw-section-label {
+  font-family: verdana;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--tw-text-dim);
+  flex-shrink: 0;
+}
+
+.tw-section-count {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tw-text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  padding: 1px 5px;
+  min-width: 14px;
+  text-align: center;
+}
+
+/* Only offered on an expanded section, and only on hover, so a category can't
+   be wiped by a stray click while skimming collapsed headers. */
+.tw-section-clear {
+  display: none;
+  margin-left: auto;
+  width: 18px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+/* Laid out (but invisible) whenever expanded, so revealing it on hover can't
+   change the header height that updateSectionHeights measures. */
+.tw-section:not(.is-collapsed) .tw-section-clear {
+  display: flex;
+  visibility: hidden;
+}
+.tw-section:not(.is-collapsed) .tw-section-header:hover .tw-section-clear {
+  visibility: visible;
+}
+.tw-section-clear .tw-ui-icon {
+  width: 12px;
+  height: 12px;
+  fill: var(--tw-text-dim);
+  transition: fill 0.12s ease;
+}
+.tw-section-clear:hover .tw-ui-icon {
+  fill: var(--tw-done);
+}
+
+.tw-section-next-village {
+  font-size: 9px;
+  color: var(--tw-text-dim);
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.tw-section-soonest {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tw-timer);
+  letter-spacing: 0.5px;
+}
+.tw-section:not(.is-collapsed) .tw-section-soonest,
+.tw-section:not(.is-collapsed) .tw-section-next-village,
+.tw-section:not(.is-collapsed) .tw-section-done-badge {
+  display: none;
+}
+
+.tw-section-done-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tw-done);
+  letter-spacing: 0.8px;
+  flex-shrink: 0;
+  margin-right: -6px;
+}
+
+.tw-section-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tw-border) transparent;
+}
+.tw-section-body::-webkit-scrollbar {
+  width: 3px;
+}
+.tw-section-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tw-section-body::-webkit-scrollbar-thumb {
+  background: var(--tw-border);
+  border-radius: 2px;
+}
+.tw-section.is-collapsed .tw-section-body {
+  display: none;
+}
+
+/* -----------------------------------------
+   ALARM CARDS
+   ----------------------------------------- */
+.tw-alarm {
+  position: relative;
+  padding: 8px 10px 10px;
+  border-bottom: 1px solid var(--tw-border);
+  cursor: pointer;
+  transition: background 0.1s ease;
+  animation: tw-card-in 0.2s ease both;
+  overflow: hidden;
+}
+.tw-alarm:last-child {
+  border-bottom: none;
+}
+.tw-alarm:hover {
+  background: var(--tw-surface-hover);
+}
+
+/* Left accent bar */
+.tw-alarm-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--tw-border);
+  transition: background 0.15s ease;
+}
+
+/* Progress bar at bottom */
+.tw-alarm-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left;
+  transform: scaleX(var(--progress, 0));
+  transition: transform 1s linear;
+  opacity: 0.5;
+}
+
+/* Content layout: two-line */
+.tw-alarm-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  z-index: 2;
+}
+
+.tw-alarm-name {
+  flex: 1;
+  min-width: 0;
+  margin-right: 8px;
+}
+
+.tw-alarm-name .n {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--tw-text);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.tw-alarm-village {
+  font-size: 9px;
+  color: var(--tw-text-dim);
+  margin-top: 2px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+.tw-village-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.tw-alarm-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.tw-alarm-timer .t {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tw-timer);
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(52, 211, 153, 0.2);
+}
+
+.tw-alarm-finish {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  color: var(--tw-text-dim);
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+
+/* -----------------------------------------
+   ALARM ACTIONS (slide in from right)
+   ----------------------------------------- */
+.tw-alarm-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px 0 16px;
+  background: linear-gradient(90deg, transparent, var(--tw-surface-hover) 35%);
+  transform: translateX(100%);
+  transition: transform 0.15s ease;
+  z-index: 5;
+}
+.tw-alarm:hover .tw-alarm-actions {
+  transform: translateX(0);
+}
+
+.tw-alarm-actions button {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.12s ease;
+}
+.tw-alarm-actions button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.tw-alarm-actions .tw-ui-icon {
+  width: 13px;
+  height: 13px;
+  fill: var(--tw-text-dim);
+  transition: fill 0.12s ease;
+}
+.tw-alarm-actions button:hover .tw-ui-icon {
+  fill: var(--tw-text);
+}
+.tw-alarm-actions .tw-act-delete:hover .tw-ui-icon {
+  fill: var(--tw-done);
+}
+.tw-alarm-actions .tw-act-pin.is-active .tw-ui-icon {
+  fill: var(--tw-accent);
+}
+
+/* -----------------------------------------
+   PINNED STATE
+   ----------------------------------------- */
+.tw-alarm.is-pinned {
+  background: linear-gradient(90deg, var(--tw-accent-glow) 0%, transparent 60%);
+}
+.tw-alarm.is-pinned .tw-alarm-accent {
+  background: var(--tw-accent) !important;
+}
+
+/* -----------------------------------------
+   DONE STATE
+   ----------------------------------------- */
+.tw-alarm.is-done .tw-alarm-timer .t {
+  color: var(--tw-done);
+}
+.tw-alarm.is-done.is-silenced .tw-alarm-timer .t {
+  color: #666;
+  animation: none !important;
+}
+.tw-alarm.is-done.is-silenced .n {
+  color: #666 !important;
+  animation: none !important;
+}
+
+/* -----------------------------------------
+   RECURRING INDICATOR
+   ----------------------------------------- */
+.recurring-indicator {
+  color: var(--tw-accent);
+  margin-left: 3px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* -----------------------------------------
+   TOOLBAR (bottom)
+   ----------------------------------------- */
+.tw-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 5px 8px;
+  background: var(--tw-surface);
+  border-top: 1px solid var(--tw-border);
+  flex-shrink: 0;
+}
+
+.tw-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.12s ease;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px !important;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--tw-text-dim);
+}
+.tw-tool-btn:hover {
+  background: var(--tw-surface-hover);
+  color: var(--tw-text);
+}
+.tw-tool-btn .tw-ui-icon {
+  width: 13px;
+  height: 13px;
+  fill: var(--tw-text-dim);
+  transition: fill 0.12s ease;
+}
+.tw-tool-btn:hover .tw-ui-icon {
+  fill: var(--tw-text);
+}
+
+.tw-tool-danger:hover {
+  color: var(--tw-done) !important;
+}
+.tw-tool-danger:hover .tw-ui-icon {
+  fill: var(--tw-done) !important;
+}
+
+/* -----------------------------------------
+   PANELS (presets, audio) — slide-up overlay
+   ----------------------------------------- */
+.tw-panel {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--tw-bg);
+  border-top: 1px solid var(--tw-border);
+  z-index: 10000;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a42 transparent;
+}
+.tw-panel::-webkit-scrollbar {
+  width: 6px;
+}
+.tw-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tw-panel::-webkit-scrollbar-thumb {
+  background: #3a3a42;
+  border-radius: 4px;
+}
+.tw-panel::-webkit-scrollbar-thumb:hover {
+  background: #4a4a52;
+}
+.tw-panel.is-open {
+  display: block;
+}
+
+.tw-panel-header {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--tw-accent);
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid var(--tw-border);
+  text-align: center;
+  position: sticky;
+  top: 0;
+  background: var(--tw-bg);
+  z-index: 1;
+}
+
+.tw-panel-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--tw-text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+.tw-panel-close:hover {
+  color: var(--tw-text);
+  background: var(--tw-surface-hover);
+}
+
+/* Preset & audio option items */
+.dropdown-option,
+.audio-option {
+  padding: 7px 12px;
+  color: var(--tw-text-dim);
+  font-size: 10.5px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--tw-border);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: "Inter", system-ui, sans-serif;
+  transition: all 0.1s ease;
+}
+.dropdown-option:hover,
+.audio-option:hover {
+  background: var(--tw-surface-hover);
+  color: var(--tw-text);
+}
+.dropdown-option:last-child,
+.audio-option:last-child {
+  border-bottom: none;
+}
+
+.audio-option.is-active-mode {
+  color: var(--tw-accent);
+  font-weight: 600;
+  background: var(--tw-accent-glow);
+}
+.audio-option .tw-ui-icon,
+.audio-option .travian-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* Per-category sound toggle rows */
+.audio-cat-row {
+  justify-content: space-between;
+  gap: 12px;
+}
+.audio-cat-label {
+  flex: 1;
+  color: var(--tw-text);
+  font-weight: 500;
+}
+.audio-cat-row.is-off .audio-cat-label {
+  color: var(--tw-text-dim);
+  opacity: 0.6;
+}
+.tw-toggle {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 16px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.tw-toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #3a3a42;
+  transition: background 0.15s ease;
+}
+.tw-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f0f0f2;
+  transition: transform 0.15s ease;
+}
+.tw-toggle.is-on .tw-toggle-track {
+  background: var(--tw-accent);
+}
+.tw-toggle.is-on .tw-toggle-thumb {
+  transform: translateX(14px);
+}
+
+/* Volume slider row */
+.audio-volume-row {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.audio-volume-label {
+  font-size: 10.5px;
+  color: var(--tw-text-dim);
+  font-family: "Inter", system-ui, sans-serif;
+  min-width: 24px;
+}
+.audio-volume-slider {
+  flex: 1;
+  height: 4px;
+  accent-color: var(--tw-accent);
+  cursor: pointer;
+}
+.audio-volume-val {
+  font-size: 10px;
+  color: var(--tw-text-dim);
+  font-family: "JetBrains Mono", monospace;
+  min-width: 28px;
+  text-align: right;
+}
+
+.tw-panel-add {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--tw-accent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  border-top: 1px solid var(--tw-border);
+  transition: background 0.12s ease;
+}
+.tw-panel-add:hover {
+  background: var(--tw-accent-glow);
+}
+
+.shortcut-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+.remove-shortcut,
+.edit-shortcut,
+.recurring-toggle {
+  opacity: 0.3;
+  transition: all 0.15s ease;
+  margin-left: 5px;
+  font-size: 12px;
+}
+.remove-shortcut:hover,
+.edit-shortcut:hover,
+.recurring-toggle:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+.remove-shortcut {
+  color: var(--tw-done);
+}
+.edit-shortcut {
+  color: var(--tw-text-dim);
+}
+.edit-shortcut:hover {
+  color: var(--tw-text);
+}
+
+.recurring-toggle.is-active {
+  opacity: 1 !important;
+  color: var(--tw-accent);
+  text-shadow: 0 0 6px var(--tw-accent-glow);
+}
+.recurring-toggle.is-daily {
+  color: var(--tw-c-lime);
+}
+
+/* -----------------------------------------
+   ICONS (SVG in alarm names)
+   ----------------------------------------- */
+.travian-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
+  fill: currentColor;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.n .travian-native-icon {
+  display: inline-block !important;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transform: scale(0.7);
+  transform-origin: left center;
+  float: left;
+}
+
+/* UI icons default */
+.tw-ui-icon {
+  display: block;
+}
+
+/* -----------------------------------------
+   ALARM TYPE ACCENT COLORS
+   Each type sets --alarm-color; shared rules consume it.
+   To add a new type: add one line below and a --tw-c-X variable in :root.
+   ----------------------------------------- */
+.tw-type-pink {
+  --alarm-color: var(--tw-c-pink);
+}
+.tw-type-purple {
+  --alarm-color: var(--tw-c-purple);
+}
+.tw-type-gold {
+  --alarm-color: var(--tw-c-gold);
+}
+.tw-type-red {
+  --alarm-color: var(--tw-c-red);
+}
+.tw-type-cyan {
+  --alarm-color: var(--tw-c-cyan);
+}
+.tw-type-green {
+  --alarm-color: var(--tw-c-green);
+}
+.tw-type-emerald {
+  --alarm-color: var(--tw-c-emerald);
+}
+.tw-type-blue {
+  --alarm-color: var(--tw-c-blue);
+}
+.tw-type-orange {
+  --alarm-color: var(--tw-c-orange);
+}
+.tw-type-amber {
+  --alarm-color: var(--tw-c-amber);
+}
+.tw-type-teal {
+  --alarm-color: var(--tw-c-teal);
+}
+.tw-type-teal .tw-alarm-accent {
+  background: var(--tw-c-teal);
+}
+.tw-type-teal .t {
+  color: var(--tw-c-teal);
+}
+.tw-type-lime {
+  --alarm-color: var(--tw-c-lime);
+}
+.tw-type-lime .tw-alarm-accent {
+  background: var(--tw-c-lime);
+}
+.tw-type-lime .t {
+  color: var(--tw-c-lime);
+}
+
+[class*="tw-type-"] .tw-alarm-accent,
+[class*="tw-type-"] .tw-alarm-progress {
+  background: var(--alarm-color);
+}
+[class*="tw-type-"] .n {
+  color: var(--alarm-color);
+}
+
+/* -----------------------------------------
+   EMPTY STATE
+   ----------------------------------------- */
+.tw-empty {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--tw-text-dim);
+}
+.tw-empty .tw-ui-icon {
+  width: 24px;
+  height: 24px;
+  fill: var(--tw-border);
+  margin: 0 auto 8px;
+}
+.tw-empty span {
+  display: block;
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* -----------------------------------------
+   TOOLTIP (simplified, kept for finish time)
+   ----------------------------------------- */
+#_tw-tt {
+  position: fixed;
+  background: var(--tw-bg);
+  color: var(--tw-accent);
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-family: "JetBrains Mono", monospace;
+  z-index: 10000000;
+  pointer-events: none;
+  border: 1px solid var(--tw-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+#build .upgradeBuilding .contractWrapper .upgradeBlocked .errorMessage {
+  white-space: nowrap !important;
+}
+
+.tippy-box[data-theme~="travian"] .tippy-content .text div._w-nm {
+  font-family: Arial, Helvetica, Verdana, sans-serif;
+  font-size: 11px;
+  color: rgb(197, 197, 197);
+  font-weight: normal;
+  margin-top: -2px;
+  margin-bottom: -13px;
+}
+
+#contentOuterContainer .village2 .buildingList {
+  top: -62px;
+  left: 445px;
+}
+
+div#build div.action div.details ._w-nm {
+  margin-bottom: -23px;
+  color: rgb(153, 153, 153);
+  font-size: 12px;
+}

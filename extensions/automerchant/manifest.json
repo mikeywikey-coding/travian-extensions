@@ -1,0 +1,32 @@
+{
+	"manifest_version": 3,
+	"name": "Travian NPC AutoMerchant",
+	"version": "3.1.0",
+	"description": "NPC resource helper with troop calculator, ratio distribution, and auto-tribe detection for Travian 4.6",
+	"author": "Travian Helper",
+	"icons": { "48": "icon.png", "128": "icon.png" },
+	"permissions": ["activeTab", "storage"],
+	"content_scripts": [
+		{
+			"matches": ["*://*.travian.com/*"],
+			"js": [
+				"config.js",
+				"utils.js",
+				"tribe-detector.js",
+				"resource-parser.js",
+				"observers.js",
+				"hero-puller.js",
+				"ui.js",
+				"main.js"
+			],
+			"css": ["styles.css"],
+			"run_at": "document_end"
+		},
+		{
+			"matches": ["*://*.travian.com/*"],
+			"js": ["page-lock.js", "hero-bridge.js"],
+			"world": "MAIN",
+			"run_at": "document_end"
+		}
+	]
+}

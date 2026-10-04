@@ -1,0 +1,81 @@
+{
+	"manifest_version": 3,
+	"name": "Travian QoL",
+	"version": "0.1.0",
+	"description": "Collection of small quality-of-life tweaks for Travian. Each feature is independently toggleable.",
+	"permissions": ["storage", "contextMenus"],
+	"host_permissions": [
+		"*://*.travian.com/*",
+		"*://*.travian.de/*",
+		"*://*.travian.co.uk/*",
+		"*://*.travian.us/*",
+		"*://*.travian.net/*",
+		"*://*.travian.fr/*",
+		"*://*.travian.it/*",
+		"*://*.travian.cz/*",
+		"*://*.travian.pl/*",
+		"*://*.travian.ru/*",
+		"*://*.travian.tr/*",
+		"*://*.travian.ae/*",
+		"*://media.oadts.com/*"
+	],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"icons": {
+		"128": "icon128.png"
+	},
+	"action": {
+		"default_title": "Travian QoL settings",
+		"default_popup": "options/options.html",
+		"default_icon": {
+			"128": "icon128.png"
+		}
+	},
+	"options_ui": {
+		"page": "options/options.html",
+		"open_in_tab": true
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"*://*.travian.com/*",
+				"*://*.travian.de/*",
+				"*://*.travian.co.uk/*",
+				"*://*.travian.us/*",
+				"*://*.travian.net/*",
+				"*://*.travian.fr/*",
+				"*://*.travian.it/*",
+				"*://*.travian.cz/*",
+				"*://*.travian.pl/*",
+				"*://*.travian.ru/*",
+				"*://*.travian.tr/*",
+				"*://*.travian.ae/*"
+			],
+			"js": [
+				"lib/registry.js",
+				"features/farmlist-multi-select/index.js",
+				"features/farmlist-bounty-sort/index.js",
+				"features/adventure-sort/index.js",
+				"features/village-resource-total/index.js",
+				"features/report-opener/index.js",
+				"features/loot-calc/index.js",
+				"features/skip-ads/index.js",
+				"features/todolist/index.js",
+				"content.js"
+			],
+			"css": ["features/loot-calc/styles.css"],
+			"run_at": "document_idle"
+		},
+		{
+			"matches": ["*://media.oadts.com/*"],
+			"all_frames": true,
+			"js": [
+				"lib/registry.js",
+				"features/skip-ads/index.js",
+				"content.js"
+			],
+			"run_at": "document_start"
+		}
+	]
+}

@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="style.css" />
+		<script src="chart.js"></script>
+		<script src="utils.js"></script>
+	</head>
+	<body>
+		<div class="header">
+			<h2>🏆 Travian Tracker</h2>
+			<div class="header-actions">
+				<span
+					id="active-players"
+					title="Active players (accounts with at least 1 village) — excludes deleted and never-settled avatars"
+				></span>
+				<span id="playtime" title="Time since tracking started"></span>
+				<div id="last-update"></div>
+				<button id="btn-backup" class="icon-btn" title="Export All Data">
+					💾
+				</button>
+				<button id="btn-restore" class="icon-btn" title="Import Data">
+					📂
+				</button>
+				<button id="btn-rank-info" class="icon-btn" title="Rank Tier Info">
+					ℹ️
+				</button>
+				<input
+					type="file"
+					id="file-input"
+					class="hidden"
+					accept=".json"
+				/>
+			</div>
+		</div>
+
+		<div id="rank-info-modal" class="hidden">
+			<div class="modal-title">Rank Tiers</div>
+			<div class="rank-info-body">
+				<div class="rank-info-note">
+					Tiers are based on your percentile across the server's total
+					activated players.
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch rank-top10-swatch">★</span>
+					<span class="rank-info-label">Top 10</span>
+					<span class="rank-info-pct">rank ≤ 10 (shimmer)</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:#a50512"></span>
+					<span class="rank-info-label rank-immortal">Immortal</span>
+					<span class="rank-info-pct">top 1% (red aura)</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:#e668a5"></span>
+					<span class="rank-info-label" style="color:#e668a5">Ascended</span>
+					<span class="rank-info-pct">top 3%</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:hsl(250, 71%, 66%)"></span>
+					<span class="rank-info-label" style="color:hsl(250, 71%, 66%)">Diamond</span>
+					<span class="rank-info-pct">top 10%</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:#13b958"></span>
+					<span class="rank-info-label" style="color:#13b958">Emerald</span>
+					<span class="rank-info-pct">top 15%</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:#7ac3e0"></span>
+					<span class="rank-info-label" style="color:#7ac3e0">Platinum</span>
+					<span class="rank-info-pct">top 20%</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:#ffb020"></span>
+					<span class="rank-info-label" style="color:#ffb020">Gold</span>
+					<span class="rank-info-pct">top 40%</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:#acacac"></span>
+					<span class="rank-info-label" style="color:#acacac">Silver</span>
+					<span class="rank-info-pct">top 60%</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:#cd7f32"></span>
+					<span class="rank-info-label" style="color:#cd7f32">Bronze</span>
+					<span class="rank-info-pct">top 85%</span>
+				</div>
+				<div class="rank-info-row">
+					<span class="rank-swatch" style="background:#ffffff"></span>
+					<span class="rank-info-label" style="color:#ffffff">Iron</span>
+					<span class="rank-info-pct">rest</span>
+				</div>
+			</div>
+			<div class="modal-actions">
+				<button id="btn-close-rank-info" class="c-btn c-btn--modal c-btn--primary">
+					Close
+				</button>
+			</div>
+		</div>
+
+		<div class="tabs">
+			<button class="tab-btn active" id="tab-curr">Current</button>
+			<button class="tab-btn" id="tab-hist">History</button>
+		</div>
+
+		<div id="view-curr">
+			<div class="section-title">Weekly Top 10</div>
+			<div class="stat-box" id="top10-list">
+				<div class="loading">Checking...</div>
+			</div>
+
+			<div class="section-title">General Rankings</div>
+			<div class="stat-box" id="stats-list">
+				<div class="loading">Loading...</div>
+			</div>
+		</div>
+
+		<div id="view-hist" class="hidden">
+			<div class="chart-controls">
+				<button class="c-btn active" data-f="all">Raw Data</button>
+				<button class="c-btn" data-f="daily">Daily Peaks</button>
+				<button class="c-btn hidden" id="btn-zoom-reset">Reset Zoom</button>
+				<div class="chart-controls-spacer"></div>
+				<button class="c-btn" id="btn-velocity">Absolute</button>
+			</div>
+
+			<div class="group-controls">
+				<div class="group-controls-label">Groups:</div>
+				<button id="btn-group-none" class="c-btn c-btn--sm c-btn--danger">
+					None
+				</button>
+
+				<div id="custom-groups-list"></div>
+				<button
+					id="btn-add-group"
+					class="icon-btn"
+					title="Create Custom Group"
+				>
+					+
+				</button>
+			</div>
+
+			<div id="group-modal" class="hidden">
+				<div class="modal-title">Create Custom Group</div>
+				<input
+					type="text"
+					id="group-name-input"
+					placeholder="e.g., All Ranks"
+				/>
+				<div id="group-items-list"></div>
+				<div class="modal-actions">
+					<button id="btn-cancel-group" class="c-btn c-btn--modal">
+						Cancel
+					</button>
+					<button
+						id="btn-save-group"
+						class="c-btn c-btn--modal c-btn--primary"
+					>
+						Save
+					</button>
+				</div>
+			</div>
+
+			<div id="chart-legend" class="chart-legend"></div>
+
+			<div class="chart-container">
+				<canvas id="rankChart"></canvas>
+				<div id="compare-box"></div>
+			</div>
+		</div>
+
+		<script src="popup.js"></script>
+	</body>
+</html>
