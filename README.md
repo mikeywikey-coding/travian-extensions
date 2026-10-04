@@ -195,6 +195,12 @@ For development, edit files in the relevant extension folder, reload the extensi
 
 [Discord invitation](docs/DISCORD-POST.md)
 
+## Copyright
+
+Copyright © 2026 luckimikey. All rights reserved for original contributions to this repository.
+
+Third-party code and assets retain their existing ownership and license terms.
+
 ## Credits
 
 Travian and game artwork belong to their respective owners. Rank Tracker includes Chart.js with its license notice. QoL's ad helper credits DUDSS in its source.

@@ -22,3 +22,5 @@ Community beta used in Brave. Chrome and Edge feedback is requested.
 Issues and suggestions: Discord **luckimikey** or GitHub issues. Include the extension version and steps to reproduce.
 
 Unofficial project, unaffiliated with Travian Games.
+
+Copyright © 2026 luckimikey. All rights reserved for original contributions. Third-party rights remain with their respective owners.
