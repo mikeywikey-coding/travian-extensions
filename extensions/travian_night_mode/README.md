@@ -1,6 +1,6 @@
 # Travian Night Mode
 
-Version 2.1.
+Version 2.2.
 
 [Features and usage guide](../../README.md#night-mode) · [Installation](../../README.md#install-in-brave-chrome-or-edge)
 

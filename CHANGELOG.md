@@ -1,5 +1,10 @@
 # Changelog
 
+## Night Mode 2.2 — 2026-10-04
+
+- Redrew the alliance bonus level markers as rings on the dark track for every state: unreached, reached, complete, inactive and upgrading. In 2.1 they still showed grey boxes.
+- Dimmed the inactive bonus bar fill.
+
 ## Night Mode 2.1 — 2026-10-04
 
 - Darkened the unreached level markers and bar outline on the alliance bonus page.

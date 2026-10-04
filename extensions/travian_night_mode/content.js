@@ -1222,18 +1222,46 @@ div.a2b table#troops td {
   background-color: var(--nm-base) !important;
 }
 
-/* Alliance bonus bars: unreached level markers are a near-white sprite and
-   the bar has a white outline. */
-.alliance-bonuses-overview .progressBar .levels > .notreached {
-  filter: brightness(0.35) !important;
-}
-
-.alliance-bonuses-overview .progressBar .front {
+/* Alliance bonus bars. Every level marker in the game's sprite sits on an
+   opaque white box, so the markers are redrawn as rings on the dark track:
+   hollow until reached, then filled with the bar's own state color. */
+#allianceBonusOverview .progressBar .front {
   border-color: var(--nm-border) !important;
 }
 
-.alliance-bonuses-overview .progressBar .front .back {
-  border-color: var(--nm-green) !important;
+#allianceBonusOverview .progressBar .front .back {
+  border-color: transparent !important;
+}
+
+#allianceBonusOverview .progressBar.inactive .back {
+  background-color: var(--nm-dim) !important;
+}
+
+#allianceBonusOverview .progressBar .levels > div:not(.upgrading) {
+  --nm-level-fill: var(--nm-base);
+  background: radial-gradient(circle 8px at 50% 50%,
+    var(--nm-level-fill) 5px, var(--nm-base) 5.5px 6px,
+    var(--nm-dim) 6.5px 7.25px, transparent 8px) !important;
+}
+
+#allianceBonusOverview .progressBar .levels > div.reached {
+  --nm-level-fill: #99c01a;
+}
+
+#allianceBonusOverview .progressBar.complete .levels > div {
+  --nm-level-fill: #237590;
+}
+
+#allianceBonusOverview .progressBar.inactive .levels > div.reached,
+#allianceBonusOverview .progressBar.inactive.complete .levels > div {
+  --nm-level-fill: var(--nm-dim);
+}
+
+/* The animated "upgrading" gear keeps its GIF: inverting turns the white box
+   black, and lighten lets the track show through it. */
+#allianceBonusOverview .progressBar .levels > div.upgrading {
+  filter: invert(1) hue-rotate(180deg) brightness(1.6);
+  mix-blend-mode: lighten;
 }
 
 /* Own row in the alliance bonus top-5 contributor tables */
