@@ -1,6 +1,6 @@
 # Travian QoL
 
-Version 0.1.0.
+Version 1.0.
 
 [Features and usage guide](../../README.md#travian-qol) · [Installation](../../README.md#install-in-brave-chrome-or-edge)
 

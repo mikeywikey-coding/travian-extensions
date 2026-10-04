@@ -14,7 +14,7 @@ These are the current versions used by the maintainer in Brave. They are shared 
 | --- | --- | --- | --- |
 | [Oasis Finder](#oasis-finder) | 69.3 | Scores nearby oases for hero and troop raids; improves oasis farm-list sorting | `extensions/OasisCalc` |
 | [TravAlarm / Watchman](#travalarm--watchman) | 3.25 | Groups game timers and custom reminders in a floating dashboard | `extensions/travAlarm` |
-| [Travian QoL](#travian-qol) | 0.1.0 | Farm-list selection, bulk tab opening, report tools, loot calculator, to-do list, and more | `extensions/TravianQoL` |
+| [Travian QoL](#travian-qol) | 1.0 | Farm-list selection, bulk tab opening, report tools, loot calculator, to-do list, and more | `extensions/TravianQoL` |
 | [Rank Tracker](#rank-tracker) | 4.8.0 | Records statistics and shows rankings, deltas, and history graphs | `extensions/TravianRankTracker` |
 | [CP Predictor](#cp-predictor) | 2.3 | Estimates when you will reach the next settlement's culture-point requirement | `extensions/NextSettlementCalc` |
 | [NPC AutoMerchant](#npc-automerchant) | 3.1.0 | Calculates troop resource needs and helps prepare hero resource transfers | `extensions/automerchant` |

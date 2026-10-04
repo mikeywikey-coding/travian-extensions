@@ -1,5 +1,9 @@
 # Changelog
 
+## Travian QoL 1.0 — 2026-10-04
+
+- Updated the manifest and documentation version from 0.1.0 to 1.0.
+
 ## Initial community beta — 2026-10-04
 
 - Published the eight currently enabled extensions as independent unpacked packages.
