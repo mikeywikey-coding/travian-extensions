@@ -1,24 +1,22 @@
 # Discord invitation
 
-Copy the text below into your Discord server:
-
----
-
-I've shared the eight Travian extensions I currently use and would love some people to try them:
+Eight Travian browser extensions are available here:
 
 https://github.com/mikeywikey-coding/travian-extensions
 
-• Oasis Finder — hero/troop estimates and nearby oasis rankings
-• TravAlarm — game timers and custom reminders
-• Travian QoL — select farm targets, right-click to open them in tabs, sort by bounty, loot calculator, to-do list, and more
-• Rank Tracker — rankings and history graphs
-• CP Planner — next-settlement ETA with celebration plans
-• NPC AutoMerchant — troop resource calculator and hero-transfer helper
-• InactiveSearch Opener — filtered targets opened as map tabs
-• Night Mode — dark theme and custom button colors
+- Oasis Finder: hero/troop estimates and oasis rankings
+- TravAlarm: game timers and reminders
+- Travian QoL: farm selection/tab opening, bounty sorting, report tools, loot calculator, to-do list
+- Rank Tracker: statistics and history graphs
+- CP Predictor: settlement CP forecasts with celebration plans
+- NPC AutoMerchant: troop resource calculations and hero-transfer assistance
+- InactiveSearch Opener: inactive targets opened as map tabs
+- Night Mode: dark theme and button colors
 
-Install only the ones you want. The README has screenshots, installation instructions, and tips for each tool. These are community beta versions used in Brave; feedback from Chrome and Edge users is welcome too.
+Install extensions separately using Load unpacked. The README includes instructions and screenshots.
 
-If you hit an issue or have a suggestion, message me on Discord: **luckimikey**, or open a GitHub issue. Please include which extension you're using and what happened.
+Community beta used in Brave. Chrome and Edge feedback is requested.
+
+Issues and suggestions: Discord **luckimikey** or GitHub issues. Include the extension version and steps to reproduce.
 
 Unofficial project, unaffiliated with Travian Games.
