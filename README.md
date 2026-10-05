@@ -27,10 +27,10 @@ Screenshots use sample data. Unofficial project, unaffiliated with Travian Games
 
 ## Install in Brave, Chrome, or Edge
 
-1. Select **Code → Download ZIP** and extract the archive, or clone the repository.
+1. Download the zip for the extension you want from [Releases](https://github.com/mikeywikey-coding/travian-extensions/releases) and extract it. (Or select **Code → Download ZIP** for all extensions at once.)
 2. Open `brave://extensions`, `chrome://extensions`, or `edge://extensions`.
 3. Enable **Developer mode**.
-4. Select **Load unpacked**, then choose an extension folder containing `manifest.json` from the table above.
+4. Select **Load unpacked**, then choose the extracted extension folder (the one containing `manifest.json`).
 5. Repeat for each extension you want to install. Refresh Travian tabs.
 6. Pin extensions with toolbar popups. Oasis Finder, TravAlarm, NPC AutoMerchant, and InactiveSearch add controls to their matching pages.
 

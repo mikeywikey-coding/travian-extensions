@@ -4,7 +4,7 @@
 
 - This repository is the canonical public distribution: https://github.com/mikeywikey-coding/travian-extensions.
 - Keep the corresponding installed development source synchronized when editing an extension here.
-- Update versions, usage documentation, and screenshots when affected.
+- Update versions, usage documentation, and screenshots when affected. Bumping a manifest version on `main` publishes a release zip automatically (`.github/workflows/release.yml`); download counts are tracked per zip.
 - Publish only distributable code and documentation; exclude credentials, browser profiles, live account data, development caches, and unrelated history.
 - Portfolio repositories must link here instead of storing extension snapshots.
 - Verify the push before reporting completion; report publishing blockers explicitly.

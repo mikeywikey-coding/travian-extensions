@@ -1,0 +1,61 @@
+# Publishes a downloadable zip for each extension whose manifest version
+# does not have a release yet. Tags look like `OasisCalc-v69.3`.
+# Download counts per zip are visible through the GitHub releases API.
+name: Release extensions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "extensions/*/manifest.json"
+      - ".github/workflows/release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-extensions
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create missing releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for manifest in extensions/*/manifest.json; do
+            dir=$(basename "$(dirname "$manifest")")
+            version=$(jq -r .version "$manifest")
+            name=$(jq -r .name "$manifest")
+            tag="${dir}-v${version}"
+
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "skip $tag (already released)"
+              continue
+            fi
+
+            zip_path="dist/${dir}-${version}.zip"
+            (cd extensions && zip -qr "../${zip_path}" "$dir" -x "*/dev.html" "*.log")
+
+            notes="**${name} ${version}**
+
+          1. Download \`${dir}-${version}.zip\` below and extract it.
+          2. Open \`chrome://extensions\` (or \`brave://\` / \`edge://\`) and turn on **Developer mode**.
+          3. Click **Load unpacked** and choose the extracted \`${dir}\` folder.
+
+          To update, extract over the same folder you installed before, then click **Reload**. See the [changelog](https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md) and the [README](https://github.com/${GITHUB_REPOSITORY}#readme) for details."
+
+            gh release create "$tag" "$zip_path" \
+              --target "$GITHUB_SHA" \
+              --title "${name} ${version}" \
+              --notes "$notes" \
+              --latest=false
+            echo "released $tag"
+          done
