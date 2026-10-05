@@ -414,23 +414,6 @@ function renderUI(data, history) {
 		week: now - 7 * 24 * 60 * 60 * 1000,
 	};
 
-	// Pinned reset boundaries for Top 10 (midnight today / Monday midnight)
-	const todayMidnight = new Date(now);
-	todayMidnight.setHours(0, 0, 0, 0);
-
-	const mondayMidnight = new Date(now);
-	const dayOfWeek = mondayMidnight.getDay(); // 0=Sun
-	mondayMidnight.setDate(
-		mondayMidnight.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1),
-	);
-	mondayMidnight.setHours(0, 0, 0, 0);
-
-	const resetTime = mondayMidnight.getTime();
-	const lastBeforeReset = history
-		.slice()
-		.reverse()
-		.find((h) => h.timestamp < resetTime);
-
 	// History reference points
 	const h1 = getHistoryPoint(history, offsets.h1);
 	const h3 = getHistoryPoint(history, offsets.h3);
@@ -438,12 +421,6 @@ function renderUI(data, history) {
 	const hW = getHistoryPoint(history, offsets.week);
 
 	// ── Diff row builder ──
-
-	const getTop10Val = (histObj, label) => {
-		if (!histObj?.top10) return null;
-		const item = histObj.top10.find((i) => i.label === label);
-		return item ? cleanSmartNum(item.val) : null;
-	};
 
 	/**
 	 * Build the small delta-row HTML for a single stat.
@@ -463,19 +440,13 @@ function renderUI(data, history) {
 		isTop10 = false,
 		label = "",
 	) => {
-		const getOld = (histObj) => {
-			if (!histObj) return { r: null, v: null, crossedReset: false };
-			if (isTop10) {
-				if (!histObj.top10) return { r: null, v: null, crossedReset: false };
-				const item = histObj.top10.find((i) => i.label === label);
-				return {
-					r: item?.rank ?? null,
-					v: item ? cleanSmartNum(item.val) : null,
-					crossedReset: !!(histObj.timestamp && histObj.timestamp < resetTime),
-				};
-			}
-			return { r: histObj[keyRank], v: histObj[keyVal], crossedReset: false };
-		};
+		const getOld = (snapshot) => ({
+			r: isTop10
+				? snapshot?.top10?.find((item) => item.label === label)?.rank
+				: snapshot?.[keyRank],
+			v: isTop10 ? top10Value(snapshot, label) : snapshot?.[keyVal],
+			snapshot,
+		});
 
 		const refs = [
 			{ tag: "1h", obj: getOld(h1) },
@@ -489,17 +460,18 @@ function renderUI(data, history) {
 			if (curr == null || oldVal == null)
 				return '<span style="color:#444">-</span>';
 
-			let diff;
-			if (isTop10 && oldObj.crossedReset && !isRank) {
-				// Points accumulate across reset: bridge the gap
-				const peakVal = getTop10Val(lastBeforeReset, label);
-				if (peakVal != null && oldVal != null) {
-					diff = peakVal - oldVal + curr;
-				} else {
+			let diff = curr - oldVal;
+			if (isTop10 && !isRank) {
+				const start = oldObj.snapshot;
+				if (!Number.isFinite(start?.timestamp) || !Number.isFinite(data.timestamp) || start.timestamp > data.timestamp)
 					return '<span style="color:#444">-</span>';
-				}
-			} else {
-				diff = curr - oldVal;
+				const samples = [start, ...history
+					.filter((point) => point.timestamp > start.timestamp && point.timestamp < data.timestamp)
+					.sort((a, b) => a.timestamp - b.timestamp), data];
+				const totals = counterTotals(samples, (point) => top10Value(point, label));
+				if (totals[0] == null || totals[totals.length - 1] == null)
+					return '<span style="color:#444">-</span>';
+				diff = totals[totals.length - 1] - totals[0];
 			}
 
 			if (diff === 0) return '<span style="color:#444">=</span>';
@@ -509,22 +481,7 @@ function renderUI(data, history) {
 		};
 
 		// ── Leading "since last open" delta (baseline on a 5-min cooldown) ──
-		const baseOld = (() => {
-			if (!baselineSnapshot) return { r: null, v: null, crossedReset: false };
-			if (isTop10) {
-				const item = baselineSnapshot.top10?.find((i) => i.label === label);
-				return {
-					r: item?.rank ?? null,
-					v: item ? cleanSmartNum(item.val) : null,
-					crossedReset: false,
-				};
-			}
-			return {
-				r: baselineSnapshot[keyRank] ?? null,
-				v: baselineSnapshot[keyVal] ?? null,
-				crossedReset: false,
-			};
-		})();
+		const baseOld = getOld(baselineSnapshot);
 		const lead = (inner) =>
 			`<span class="lead-diff" title="Change since last popup open (refreshes every 5 min)">${inner}</span>`;
 		const leadRank = lead(fmt(currRank, baseOld, true));
@@ -1012,8 +969,9 @@ function updateCompareBox(chart, startIdx, endIdx, timestamps) {
 	let hasData = false;
 	chart.data.datasets.forEach((ds, dsIndex) => {
 		if (!chart.isDatasetVisible(dsIndex)) return;
-		const val1 = ds.data[i1];
-		const val2 = ds.data[i2];
+		const values = ds.comparisonData || ds.data;
+		const val1 = values[i1];
+		const val2 = values[i2];
 		if (val1 == null || val2 == null) return;
 
 		const diff = val2 - val1;
@@ -1280,13 +1238,26 @@ async function loadGraph(filter, storageKey) {
 	// Sanitise stale data + compute derived resource fields
 	hist = hist.map((item) => {
 		if (item.valRob > 100_000_000_000) item.valRob = null;
-		if (item.valRes && !item.valRob) item.valRob = item.valRes;
+		if (item.valRob == null && item.valRes != null) item.valRob = item.valRes;
 		if (item.valPve != null) item.valPveResources = item.valPve * 160;
 		if (item.valRob != null && item.valPveResources != null) {
 			item.valRobExcludingPve = item.valRob - item.valPveResources;
 		}
 		return item;
 	});
+
+	// Unwrap counters before aggregation/interpolation so reset drops never
+	// become negative rates or comparison deltas. Keep absolute charts raw.
+	hist.sort((a, b) => a.timestamp - b.timestamp);
+	for (const key of ["valRob", "valPve", "valBounty"]) {
+		const totals = counterTotals(hist, (point) => point[key]);
+		hist.forEach((point, i) => { point[`${key}Total`] = totals[i]; });
+	}
+	for (const point of hist) {
+		point.valPveResourcesTotal = point.valPveTotal == null ? null : point.valPveTotal * 160;
+		point.valRobExcludingPveTotal = point.valRobTotal == null || point.valPveResourcesTotal == null
+			? null : point.valRobTotal - point.valPveResourcesTotal;
+	}
 
 	// ── Aggregate / interpolate ──
 	let data;
@@ -1306,9 +1277,10 @@ async function loadGraph(filter, storageKey) {
 
 			for (const key of Object.keys(point)) {
 				if (typeof point[key] !== "number" || key === "timestamp") continue;
-				if (prev[key] != null && point[key] != null && hoursDiff > 0) {
+				const valueKey = RESET_VALUE_KEYS.includes(key) ? `${key}Total` : key;
+				if (prev[valueKey] != null && point[valueKey] != null && hoursDiff > 0) {
 					delta[key] =
-						Math.round(((point[key] - prev[key]) / hoursDiff) * 10) / 10;
+						Math.round(((point[valueKey] - prev[valueKey]) / hoursDiff) * 10) / 10;
 				} else {
 					delta[key] = null;
 				}
@@ -1417,6 +1389,8 @@ async function loadGraph(filter, storageKey) {
 		data: data.map((x) =>
 			cfg.ceil ? ceilOrNull(x[cfg.key]) : valOrNull(x[cfg.key]),
 		),
+		comparisonData: !isVelocityMode && RESET_VALUE_KEYS.includes(cfg.key)
+			? data.map((point) => point[`${cfg.key}Total`] ?? null) : null,
 		borderColor: cfg.color,
 		borderDash: cfg.dash || [],
 		yAxisID: cfg.axis,
@@ -1463,11 +1437,12 @@ async function loadGraph(filter, storageKey) {
 								lbl += context.parsed.y.toLocaleString();
 
 							if (!isVelocityMode && context.dataIndex > 0) {
-								const curr = context.raw;
+								const values = context.dataset.comparisonData || context.dataset.data;
+								const curr = values[context.dataIndex];
 								let prev = null;
 								for (let i = context.dataIndex - 1; i >= 0; i--) {
-									if (context.dataset.data[i] != null) {
-										prev = context.dataset.data[i];
+									if (values[i] != null) {
+										prev = values[i];
 										break;
 									}
 								}
@@ -1544,6 +1519,8 @@ async function loadGraph(filter, storageKey) {
    §10  GRAPH — DATA TRANSFORMS
    ═══════════════════════════════════════════════════════════════════════ */
 
+const RESET_VALUE_KEYS = ["valRob", "valPve", "valPveResources", "valRobExcludingPve", "valBounty"];
+
 /** Value keys where the daily peak is the maximum. */
 const VALUE_KEYS = [
 	"pointsOff",
@@ -1594,6 +1571,11 @@ function aggregateDaily(rawData) {
 		const g = groups[dateKey];
 		for (const k of VALUE_KEYS) {
 			if (pt[k] != null) g[k] = g[k] != null ? Math.max(g[k], pt[k]) : pt[k];
+		}
+		// Carry the final cumulative observation through a daily bucket.
+		for (const key of RESET_VALUE_KEYS) {
+			const totalKey = `${key}Total`;
+			if (pt[totalKey] != null) g[totalKey] = pt[totalKey];
 		}
 		for (const k of RANK_KEYS) {
 			if (pt[k] != null) g[k] = g[k] != null ? Math.min(g[k], pt[k]) : pt[k];

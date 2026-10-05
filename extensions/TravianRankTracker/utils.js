@@ -77,6 +77,27 @@ function formatDuration(ms) {
 	return `${mins}m`;
 }
 
+/** Accumulate observed gains from a resetting counter, skipping missing samples.
+ * A decrease starts a new period. Unobserved gains cannot be recovered.
+ * Callers supply chronological samples; never use this for ranks or strength.
+ */
+function counterTotals(samples, readValue) {
+	let previous = null;
+	let total = 0;
+	return samples.map((sample) => {
+		const value = readValue(sample);
+		if (!Number.isFinite(value) || value < 0) return null;
+		total += previous == null || value < previous ? value : value - previous;
+		previous = value;
+		return total;
+	});
+}
+
+function top10Value(snapshot, label) {
+	const item = snapshot?.top10?.find((entry) => entry.label === label);
+	return item ? cleanSmartNum(item.val) : null;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    §2  HTML → DATA EXTRACTORS
    ═══════════════════════════════════════════════════════════════════════ */
@@ -525,7 +546,20 @@ async function saveToHistory(current, api, storageKey) {
 	const hist = res[storageKey] || [];
 
 	const lastTs = hist.length > 0 ? hist[hist.length - 1].timestamp : 0;
-	if (hist.length > 0 && Date.now() - lastTs < DEDUP_WINDOW_MS) {
+	const last = hist[hist.length - 1];
+	// Keep the last observation of the old period, even within the dedup window.
+	const decreased = (before, after) =>
+		Number.isFinite(before) && Number.isFinite(after) && after < before;
+	const hasReset = (before, after) => ["valRob", "valPve", "valBounty"].some((key) =>
+		decreased(before?.[key], after[key]),
+	) || (after.top10 || []).some((item) =>
+		decreased(top10Value(before, item.label), cleanSmartNum(item.val)),
+	);
+	// Also retain the first post-reset sample: replacing it with a larger value
+	// could hide the drop entirely when the new counter catches up quickly.
+	const counterReset = hasReset(last, current) ||
+		(hist.length > 1 && hasReset(hist[hist.length - 2], last));
+	if (hist.length > 0 && Date.now() - lastTs < DEDUP_WINDOW_MS && !counterReset) {
 		hist[hist.length - 1] = current; // overwrite recent entry
 	} else {
 		hist.push(current);

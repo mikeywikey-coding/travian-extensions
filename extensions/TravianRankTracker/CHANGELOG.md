@@ -1,5 +1,12 @@
 # Travian Rank Tracker v5.0 — Refactor Changelog
 
+## Rank Tracker 4.8.1 — 2026-10-05
+
+- Fixed reset-related negative value changes in Current comparisons (including since last open) and History tooltip, selection, and velocity calculations.
+- Detect counter drops from observations instead of relying on local Monday midnight; bridge multiple observed resets and skip missing samples. Daily bounty resets are handled in History.
+- Preserve pre-reset history within the deduplication window and keep valid zero raid values instead of replacing them with legacy values.
+- Existing history is handled on display; no data reset is required. Unobserved gains cannot be reconstructed.
+
 ## v4.8.0 — Playtime anchored to game start
 
 - Playtime timer now starts from the received-time of the first Travian system
