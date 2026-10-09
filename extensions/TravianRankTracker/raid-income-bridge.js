@@ -10,13 +10,16 @@ var RankTrackerRaidIncome = {
 
 		let gained = 0;
 		let elapsedHours = 0;
-		for (let i = 1; i < history.length; i++) {
-			const previous = history[i - 1];
-			const current = history[i];
+		const samples = history.filter((point) => Number.isFinite(point?.timestamp) &&
+			Number.isFinite(point.valBounty) && point.valBounty >= 0)
+			.sort((a, b) => a.timestamp - b.timestamp);
+		for (let i = 1; i < samples.length; i++) {
+			const previous = samples[i - 1];
+			const current = samples[i];
 			const hours = (current.timestamp - previous.timestamp) / 3_600_000;
-			const increase = current.valBounty - previous.valBounty;
-			// A negative change is the daily counter reset, not negative income.
-			if (!(hours > 0) || !(increase >= 0)) continue;
+			const increase = current.valBounty < previous.valBounty
+				? current.valBounty : current.valBounty - previous.valBounty;
+			if (!(hours > 0)) continue;
 			gained += increase;
 			elapsedHours += hours;
 		}
@@ -32,18 +35,23 @@ var RankTrackerRaidIncome = {
 	const pageKey = "_rt_ri";
 
 	let summary = (await chrome.storage.local.get(summaryKey))[summaryKey];
-	if (!summary) {
+	if (!summary || !Number.isFinite(summary.updatedAt)) {
 		const historyKey = `history_${location.origin}`;
 		const history = (await chrome.storage.local.get(historyKey))[historyKey];
-		summary = { perHour: RankTrackerRaidIncome.hourlyAverage(history) };
+		summary = {
+			perHour: RankTrackerRaidIncome.hourlyAverage(history),
+			updatedAt: (Array.isArray(history) ? history : []).reduce((latest, point) =>
+				Number.isFinite(point?.timestamp) && Number.isFinite(point.valBounty)
+					? Math.max(latest, point.timestamp) : latest, 0),
+		};
 		await chrome.storage.local.set({ [summaryKey]: summary });
 	}
-	if (summary.perHour == null) {
+	if (!Number.isFinite(summary.perHour) || summary.perHour < 0) {
 		localStorage.removeItem(pageKey);
 		return;
 	}
 	localStorage.setItem(
 		pageKey,
-		JSON.stringify({ perHour: summary.perHour, updatedAt: Date.now() }),
+		JSON.stringify({ perHour: summary.perHour, updatedAt: summary.updatedAt }),
 	);
 })();

@@ -28,6 +28,7 @@ const api = chrome;
  * keeps the same comparison point so the delta keeps accumulating.
  */
 let baselineSnapshot = null;
+let activeServerOrigin = null;
 
 /** Whether the baseline's cooldown has elapsed and it should be re-pinned. */
 let baselineExpired = false;
@@ -41,10 +42,14 @@ const BASELINE_COOLDOWN_MS = 5 * 60 * 1000;
 
 document.addEventListener("DOMContentLoaded", async () => {
 	setupTabs();
+	initBackupRestore();
+	initRankInfoModal();
+	initVelocityToggle();
 
 	// Import workaround: if opened as a tab with ?action=import, auto-click file input
 	if (new URLSearchParams(window.location.search).get("action") === "import") {
 		setTimeout(() => document.getElementById("file-input")?.click(), 500);
+		return; // Restore must not race this page's startup collection.
 	}
 
 	// ── Load persisted preferences ──
@@ -54,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		"velocityMode",
 		"appZoom",
 	]);
-	let serverOrigin = storageRes.serverUrl;
+	let serverOrigin = isTravianOrigin(storageRes.serverUrl) ? storageRes.serverUrl : null;
 
 	initZoomControls(storageRes.appZoom);
 
@@ -75,8 +80,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		try {
 			const urlObj = new URL(tab.url);
 			if (
-				!urlObj.host.startsWith("forum") &&
-				!urlObj.host.startsWith("lobby")
+				isTravianOrigin(urlObj.origin)
 			) {
 				serverOrigin = urlObj.origin;
 				const knownServers =
@@ -104,6 +108,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		return;
 	}
 
+	activeServerOrigin = serverOrigin;
 	const storageKey = `history_${serverOrigin}`;
 
 	// ── Load "since last open" baseline (5-min cooldown) ──
@@ -130,22 +135,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 	}
 
 	// Fresh fetch
-	if (isTravianTab && tab.url.includes("/statistics")) {
-		await scrapeActiveScreen(tab.id, serverOrigin, storageKey);
+	if (isTravianTab && ["/statistics/general", "/statistics/player/top10"].includes(new URL(tab.url).pathname)) {
+		await scrapeActiveScreen(tab.id, serverOrigin, storageKey, new URL(tab.url).pathname === "/statistics/player/top10");
 	} else {
 		await fetchAndRender(serverOrigin, storageKey);
 	}
 
 	await updatePlaytime(serverOrigin);
 
-	// ── Backup / Restore ──
-	initBackupRestore();
-
-	// ── Rank info modal ──
-	initRankInfoModal();
-
-	// ── Velocity toggle ──
-	initVelocityToggle(serverOrigin);
 });
 
 /**
@@ -276,11 +273,13 @@ async function fetchAndRender(serverOrigin, storageKey) {
 	);
 
 	if (status === "logged_out") {
+		setUpdateStatus("Session expired");
 		document.getElementById("stats-list").innerHTML =
 			'<div class="error">Session expired — please log in to Travian</div>';
 		return;
 	}
 	if (status === "fetch_error" || !data) {
+		setUpdateStatus("Update failed");
 		document.getElementById("stats-list").innerHTML =
 			'<div class="error">Could not connect to server</div>';
 		return;
@@ -295,8 +294,7 @@ async function fetchAndRender(serverOrigin, storageKey) {
  * When the popup opens on a /statistics page, scrape the DOM directly from
  * the active tab instead of making separate HTTP requests.
  */
-async function scrapeActiveScreen(tabId, serverOrigin, storageKey) {
-	const latestKey = `latest_${serverOrigin}`;
+async function scrapeActiveScreen(tabId, serverOrigin, storageKey, weekly = false) {
 	try {
 		const result = await api.scripting.executeScript({
 			target: { tabId },
@@ -305,25 +303,10 @@ async function scrapeActiveScreen(tabId, serverOrigin, storageKey) {
 
 		if (!result?.[0]) throw new Error("Empty script result");
 
-		let mergedData = await processHtmlData(
-			result[0].result,
-			api,
-			serverOrigin,
-			storageKey,
-			/* returnOnly */ true,
+		const mergedData = await processHtmlData(
+			result[0].result, api, serverOrigin, storageKey, false, weekly,
 		);
 
-		// Fill in Top 10 if not found in the DOM
-		if (!mergedData.top10 || mergedData.top10.length === 0) {
-			const top10Data = await fetchTop10(serverOrigin);
-			if (top10Data.top10.length > 0) mergedData.top10 = top10Data.top10;
-			mergeFields(mergedData, top10Data, WEEKLY_KEYS);
-		}
-
-		await api.storage.local.set({ [latestKey]: mergedData });
-
-		const res = await api.storage.local.get([storageKey]);
-		renderUI(mergedData, res[storageKey] || []);
 		await maybeUpdateBaseline(serverOrigin, mergedData);
 	} catch (_) {
 		// Fallback to network fetch if scripting fails
@@ -333,7 +316,7 @@ async function scrapeActiveScreen(tabId, serverOrigin, storageKey) {
 
 /**
  * Load the most recent snapshot from storage and render immediately (no network).
- * Also performs one-time dedup cleanup on the history array.
+ * History is left intact, including both sides of counter resets.
  */
 async function loadFromStorage(storageKey, serverOrigin) {
 	if (!storageKey) return;
@@ -342,39 +325,12 @@ async function loadFromStorage(storageKey, serverOrigin) {
 	const res = await api.storage.local.get([storageKey, latestKey]);
 	let hist = res[storageKey] || [];
 
-	// ── One-pass dedup: keep one entry per 30-min bucket ──
-	if (hist.length > 0) {
-		const seenBuckets = new Set();
-		const cleaned = [];
-		let changed = false;
-
-		// Iterate newest→oldest so the latest entry per bucket wins
-		for (let i = hist.length - 1; i >= 0; i--) {
-			const pt = hist[i];
-			if (!pt?.timestamp) continue;
-
-			const d = new Date(pt.timestamp);
-			const bucket = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}-${Math.floor(d.getMinutes() / 30)}`;
-
-			if (!seenBuckets.has(bucket)) {
-				seenBuckets.add(bucket);
-				cleaned.unshift(pt);
-			} else {
-				changed = true;
-			}
-		}
-
-		if (changed) {
-			hist = cleaned;
-			await storeHistory(api, storageKey, hist);
-		}
-	}
+	// Reading history must not erase observations around counter resets.
 
 	const data =
 		res[latestKey] || (hist.length > 0 ? hist[hist.length - 1] : { top10: [] });
 	if (data.timestamp) renderUI(data, hist);
 
-	await updatePlaytime(serverOrigin);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -385,7 +341,7 @@ async function loadFromStorage(storageKey, serverOrigin) {
  * Find the history entry closest to `targetTime`.
  */
 function getHistoryPoint(history, targetTime) {
-	if (!history?.length) return null;
+	if (!history?.length || targetTime < history.reduce((oldest, point) => Math.min(oldest, point.timestamp), Infinity)) return null;
 	let closest = null;
 	let minDiff = Infinity;
 	for (const item of history) {
@@ -419,6 +375,7 @@ function renderUI(data, history) {
 	const h3 = getHistoryPoint(history, offsets.h3);
 	const hD = getHistoryPoint(history, offsets.day);
 	const hW = getHistoryPoint(history, offsets.week);
+	const weeklyHistory = history.filter((point) => point.top10?.length);
 
 	// ── Diff row builder ──
 
@@ -449,10 +406,10 @@ function renderUI(data, history) {
 		});
 
 		const refs = [
-			{ tag: "1h", obj: getOld(h1) },
-			{ tag: "3h", obj: getOld(h3) },
-			{ tag: "D", obj: getOld(hD) },
-			{ tag: "W", obj: getOld(hW) },
+			{ tag: "1h", obj: getOld(isTop10 ? getHistoryPoint(weeklyHistory, offsets.h1) : h1) },
+			{ tag: "3h", obj: getOld(isTop10 ? getHistoryPoint(weeklyHistory, offsets.h3) : h3) },
+			{ tag: "D", obj: getOld(isTop10 ? getHistoryPoint(weeklyHistory, offsets.day) : hD) },
+			{ tag: "W", obj: getOld(isTop10 ? getHistoryPoint(weeklyHistory, offsets.week) : hW) },
 		];
 
 		const fmt = (curr, oldObj, isRank) => {
@@ -562,6 +519,8 @@ function renderUI(data, history) {
 		topHtml = '<div class="loading">No Top 10 Data</div>';
 	}
 	document.getElementById("top10-list").innerHTML = topHtml;
+	document.getElementById("top10-list").title = data.weeklyTimestamp
+		? `Weekly data observed: ${new Date(data.weeklyTimestamp).toLocaleString()}` : "";
 
 	// ── General Rankings section ──
 
@@ -576,7 +535,7 @@ function renderUI(data, history) {
 		const rankStyle = tier.isTop10 || !rank ? "" : `color:${tier.color};`;
 		const valDisp = displayOverride
 			? ` <span class="val val-sub">(${displayOverride})</span>`
-			: points
+			: points != null
 				? ` <span class="val val-sub">(${points.toLocaleString()})</span>`
 				: "";
 		genHtml += `
@@ -643,7 +602,7 @@ function renderUI(data, history) {
 
 	const calcAvgRank = (obj) => {
 		if (!obj) return null;
-		const vals = GEN_RANK_KEYS.map((k) => obj[k]).filter((r) => r != null);
+		const vals = GEN_RANK_KEYS.map((k) => obj[k]).filter((r) => Number.isFinite(r) && r > 0);
 		return vals.length > 0
 			? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)
 			: null;
@@ -732,7 +691,7 @@ function setupTabs() {
 
 		setUpdateStatus("(Updating...)");
 
-		const prefs = await api.storage.local.get(["serverUrl"]);
+		const prefs = { serverUrl: activeServerOrigin };
 		if (!prefs.serverUrl) return;
 
 		const tabs = await api.tabs.query({ active: true, currentWindow: true });
@@ -740,10 +699,10 @@ function setupTabs() {
 		const storageKey = `history_${prefs.serverUrl}`;
 
 		if (
-			tab?.url?.includes("/statistics") &&
-			tab.url.includes(new URL(prefs.serverUrl).host)
+			tab?.url && ["/statistics/general", "/statistics/player/top10"].includes(new URL(tab.url).pathname) &&
+			new URL(tab.url).origin === prefs.serverUrl
 		) {
-			await scrapeActiveScreen(tab.id, prefs.serverUrl, storageKey);
+			await scrapeActiveScreen(tab.id, prefs.serverUrl, storageKey, new URL(tab.url).pathname === "/statistics/player/top10");
 		} else {
 			await fetchAndRender(prefs.serverUrl, storageKey);
 		}
@@ -756,7 +715,8 @@ function setupTabs() {
 		viewCurr.classList.add("hidden");
 		viewHist.classList.remove("hidden");
 
-		const prefs = await api.storage.local.get(["serverUrl", "graphFilter"]);
+		const prefs = await api.storage.local.get(["graphFilter"]);
+		prefs.serverUrl = activeServerOrigin;
 		const filter = prefs.graphFilter || "all";
 
 		// Sync active state on filter buttons
@@ -770,7 +730,7 @@ function setupTabs() {
 	};
 
 	// ── Filter buttons (Raw Data / Daily Peaks) ──
-	document.querySelectorAll(".c-btn").forEach((btn) => {
+	document.querySelectorAll(".c-btn[data-f]").forEach((btn) => {
 		btn.onclick = async () => {
 			if (
 				[
@@ -783,6 +743,7 @@ function setupTabs() {
 				return;
 
 			const filter = btn.dataset.f;
+			await api.storage.local.remove("graphZoom");
 			await api.storage.local.set({ graphFilter: filter });
 
 			document.querySelectorAll(".c-btn").forEach((b) => {
@@ -799,7 +760,7 @@ function setupTabs() {
 			});
 			btn.classList.add("active");
 
-			const prefs = await api.storage.local.get(["serverUrl"]);
+			const prefs = { serverUrl: activeServerOrigin };
 			if (prefs.serverUrl) loadGraph(filter, `history_${prefs.serverUrl}`);
 		};
 	});
@@ -821,6 +782,48 @@ function setupTabs() {
 /* ═══════════════════════════════════════════════════════════════════════════
    §6  BACKUP & RESTORE
    ═══════════════════════════════════════════════════════════════════════ */
+
+function validateBackup(data) {
+	const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+	const requireValid = (valid) => { if (!valid) throw new Error("Invalid backup"); };
+	const origin = isTravianOrigin;
+	const snapshot = (value) => {
+		requireValid(object(value) && Number.isFinite(value.timestamp) && value.timestamp > 0 && value.timestamp <= 8.64e15);
+		for (const [key, field] of Object.entries(value)) {
+			if (key === "top10") {
+				requireValid(Array.isArray(field));
+				for (const item of field) requireValid(object(item) &&
+					["PvP of the week", "Defenders of the week", "PvE of the week", "Robbers of the week"].includes(item.label) &&
+					Number.isFinite(item.rank) && item.rank > 0 && (item.val == null || Number.isFinite(item.val)));
+			} else requireValid(field == null || Number.isFinite(field));
+		}
+	};
+	requireValid(object(data) && origin(data.serverUrl));
+	let hasSnapshots = false;
+	for (const [key, value] of Object.entries(data)) {
+		const match = /^(history|latest|baseline|firstSeen|gameStart|lastFetchStatus)_(.+)$/.exec(key);
+		if (match) {
+			requireValid(origin(match[2]));
+			if (match[1] === "history") {
+				requireValid(Array.isArray(value));
+				value.forEach(snapshot);
+				hasSnapshots ||= value.length > 0;
+			} else if (match[1] === "latest") { snapshot(value); hasSnapshots = true; }
+			else if (match[1] === "baseline") {
+				requireValid(object(value) && Number.isFinite(value.timestamp));
+				snapshot(value.data);
+			} else if (match[1] === "lastFetchStatus") requireValid(object(value) && Number.isFinite(value.timestamp) && typeof value.ok === "boolean" && typeof value.reason === "string");
+			else requireValid(Number.isFinite(value) && value > 0);
+		} else if (key === "serverUrls") requireValid(Array.isArray(value) && value.every(origin));
+		else if (key === "velocityMode") requireValid(typeof value === "boolean");
+		else if (key === "appZoom") requireValid(Number.isFinite(value) && value >= 0.5 && value <= 2);
+		else if (key === "graphFilter") requireValid(["all", "daily"].includes(value));
+		else if (key === "graphZoom") requireValid(object(value) && Object.values(value).every(Number.isFinite));
+		else if (key === "graphPrefs") requireValid(object(value) && Object.values(value).every((item) => typeof item === "boolean"));
+		else if (key === "customGroups") requireValid(object(value) && Object.values(value).every((items) => Array.isArray(items) && items.every((item) => typeof item === "string")));
+	}
+	requireValid(hasSnapshots);
+}
 
 function initBackupRestore() {
 	document.getElementById("btn-backup")?.addEventListener("click", async () => {
@@ -885,8 +888,17 @@ function initBackupRestore() {
 					if (historyKey) data.serverUrl = historyKey.replace("history_", "");
 				}
 
-				await api.storage.local.clear();
-				await api.storage.local.set(data);
+				validateBackup(data);
+				for (const [key, value] of Object.entries(data)) {
+					if (!key.startsWith("history_")) continue;
+					value.sort((a, b) => a.timestamp - b.timestamp);
+				}
+				for (const key of Object.keys(data)) if (key.startsWith("raidIncome_")) delete data[key];
+				await navigator.locks.request("rank-tracker-storage", async () => {
+					const previous = await api.storage.local.get(null);
+					await api.storage.local.set(data);
+					await api.storage.local.remove(Object.keys(previous).filter((key) => !(key in data)));
+				});
 				setUpdateStatus("✅ Data Restored!");
 				setTimeout(() => (window.location.href = "popup.html"), 800);
 			} catch {
@@ -895,6 +907,7 @@ function initBackupRestore() {
 				e.target.value = "";
 			}
 		};
+		reader.onerror = () => setUpdateStatus("Error: Could not read file");
 		reader.readAsText(file);
 	});
 }
@@ -919,7 +932,8 @@ function initVelocityToggle(serverOrigin) {
 		await api.storage.local.set({ velocityMode: isVelocityMode });
 		updateVelocityButtonUI();
 
-		const prefs = await api.storage.local.get(["serverUrl", "graphFilter"]);
+		const prefs = await api.storage.local.get(["graphFilter"]);
+		prefs.serverUrl = activeServerOrigin;
 		const url = prefs.serverUrl || serverOrigin;
 		if (url) loadGraph(prefs.graphFilter || "all", `history_${url}`);
 	});
@@ -1207,14 +1221,17 @@ const DATASETS_CONFIG = [
 /**
  * Load history from storage, process it, and render the Chart.js graph.
  */
+let graphLoadVersion = 0;
 async function loadGraph(filter, storageKey) {
 	if (!storageKey) return;
+	const loadVersion = ++graphLoadVersion;
 
 	const res = await api.storage.local.get([
 		storageKey,
 		"graphPrefs",
 		"graphZoom",
 	]);
+	if (loadVersion !== graphLoadVersion) return;
 	let hist = res[storageKey] || [];
 	const prefs = res.graphPrefs || {};
 	const savedZoom = res.graphZoom || {};
@@ -1233,7 +1250,12 @@ async function loadGraph(filter, storageKey) {
 		);
 	}
 
-	if (!hist.length) return;
+	if (!hist.length) {
+		window.myChart?.destroy();
+		window.myChart = null;
+		document.getElementById("chart-legend").replaceChildren();
+		return;
+	}
 
 	// Sanitise stale data + compute derived resource fields
 	hist = hist.map((item) => {
@@ -1266,24 +1288,25 @@ async function loadGraph(filter, storageKey) {
 	} else {
 		data = interpolateGaps(hist);
 	}
+	if (!(savedZoom.min >= 0 && savedZoom.max > savedZoom.min && savedZoom.max < data.length)) {
+		delete savedZoom.min;
+		delete savedZoom.max;
+		resetZoomBtn?.classList.add("hidden");
+	}
 
 	// ── Velocity transform ──
 	if (isVelocityMode) {
-		data = data.map((point, i, arr) => {
-			if (i === 0) return { timestamp: point.timestamp };
-			const prev = arr[i - 1];
-			const hoursDiff = (point.timestamp - prev.timestamp) / 3_600_000;
+		const previous = new Map();
+		data = data.map((point) => {
 			const delta = { timestamp: point.timestamp };
-
-			for (const key of Object.keys(point)) {
-				if (typeof point[key] !== "number" || key === "timestamp") continue;
+			for (const { key } of DATASETS_CONFIG) {
 				const valueKey = RESET_VALUE_KEYS.includes(key) ? `${key}Total` : key;
-				if (prev[valueKey] != null && point[valueKey] != null && hoursDiff > 0) {
-					delta[key] =
-						Math.round(((point[valueKey] - prev[valueKey]) / hoursDiff) * 10) / 10;
-				} else {
-					delta[key] = null;
-				}
+				const value = point[valueKey];
+				const prev = previous.get(key);
+				const hours = prev ? (point.timestamp - prev.timestamp) / 3_600_000 : 0;
+				delta[key] = Number.isFinite(value) && prev && hours > 0
+					? Math.round(((value - prev.value) / hours) * 10) / 10 : null;
+				if (Number.isFinite(value)) previous.set(key, { value, timestamp: point.timestamp });
 			}
 			return delta;
 		});
@@ -1599,9 +1622,9 @@ function interpolateGaps(rawData) {
 		const curr = rawData[i];
 		const gap = curr.timestamp - prev.timestamp;
 
-		if (gap > STEP_MS * 1.5) {
+		if (gap > STEP_MS * 1.5 && gap <= 7 * 24 * 60 * 60 * 1000) {
 			const steps = Math.floor(gap / STEP_MS);
-			for (let s = 1; s < steps; s++) {
+			for (let s = 1; s < steps && result.length < MAX_HISTORY_LEN; s++) {
 				const fakeTs = prev.timestamp + s * STEP_MS;
 				const ratio = (fakeTs - prev.timestamp) / gap;
 				const fakePoint = { timestamp: fakeTs };
@@ -1766,9 +1789,8 @@ async function initGroupManager(chart) {
 	if (!container) return;
 
 	// "None" button: hide all datasets
-	document.getElementById("btn-group-none")?.addEventListener(
-		"click",
-		async () => {
+	document.getElementById("btn-group-none").onclick = async () => {
+			if (chart !== window.myChart) return;
 			const newPrefs = {};
 			chart.data.datasets.forEach((ds, i) => {
 				chart.setDatasetVisibility(i, false);
@@ -1776,13 +1798,12 @@ async function initGroupManager(chart) {
 			});
 			chart.update("none");
 			await api.storage.local.set({ graphPrefs: newPrefs });
-			initCustomLegend(chart);
-		},
-		{ once: false },
-	);
+			if (chart === window.myChart) initCustomLegend(chart);
+	};
 
 	// Load saved groups
 	const res = await api.storage.local.get(["customGroups"]);
+	if (chart !== window.myChart) return;
 	let groups = res.customGroups || {};
 
 	const renderGroups = () => {
@@ -1811,6 +1832,7 @@ async function initGroupManager(chart) {
 				);
 
 				const prR = await api.storage.local.get(["graphPrefs"]);
+				if (chart !== window.myChart) return;
 				const newPrefs = prR.graphPrefs || {};
 				chart.data.datasets.forEach((ds, i) => {
 					if (!groupLabels.includes(ds.label)) return;
@@ -1850,7 +1872,7 @@ async function initGroupManager(chart) {
 	const nameInput = document.getElementById("group-name-input");
 	const itemsList = document.getElementById("group-items-list");
 
-	document.getElementById("btn-add-group")?.addEventListener("click", () => {
+	document.getElementById("btn-add-group").onclick = () => {
 		nameInput.value = "";
 		itemsList.innerHTML = "";
 
@@ -1866,15 +1888,13 @@ async function initGroupManager(chart) {
 
 		modal.classList.remove("hidden");
 		nameInput.focus();
-	});
+	};
 
-	document.getElementById("btn-cancel-group")?.addEventListener("click", () => {
+	document.getElementById("btn-cancel-group").onclick = () => {
 		modal.classList.add("hidden");
-	});
+	};
 
-	document
-		.getElementById("btn-save-group")
-		?.addEventListener("click", async () => {
+	document.getElementById("btn-save-group").onclick = async () => {
 			const gName = nameInput.value.trim();
 			if (!gName) return;
 			const selected = Array.from(
@@ -1886,5 +1906,5 @@ async function initGroupManager(chart) {
 			await api.storage.local.set({ customGroups: groups });
 			modal.classList.add("hidden");
 			renderGroups();
-		});
+	};
 }

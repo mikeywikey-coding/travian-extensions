@@ -31,30 +31,29 @@
  * @returns {number|null}
  */
 function cleanSmartNum(str) {
-	if (typeof str === "number") return str;
+	if (typeof str === "number") return Number.isFinite(str) ? str : null;
 	if (!str) return null;
 
 	str = str
 		.toString()
 		.replace(/<[^>]*>/g, "")
+		.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, "")
+		.replace(/\u2212/g, "-")
 		.trim()
 		.toLowerCase();
 
-	// SI-suffix shorthand (e.g. "12.3k" or "1.5m")
-	const suffixes = { k: 1_000, m: 1_000_000 };
-	for (const [letter, factor] of Object.entries(suffixes)) {
-		if (str.includes(letter)) {
-			str = str.replace(letter, "").replace(",", ".");
-			const val = parseFloat(str);
-			return isNaN(val) ? null : Math.round(val * factor);
-		}
+	// Only a complete numeric token may use a shorthand suffix.
+	const shorthand = str.match(/^([+-]?\d+(?:[.,]\d+)?)\s*([km])$/);
+	if (shorthand) {
+		return Math.round(Number(shorthand[1].replace(",", ".")) *
+			(shorthand[2] === "k" ? 1_000 : 1_000_000));
 	}
 
 	// Thousands-separator detection: "1.234" with exactly 3 digits after "."
 	if (/\.\d{3}\b/.test(str)) str = str.replace(/\./g, "");
 
-	const digits = str.replace(/[^0-9]/g, "");
-	return digits ? parseInt(digits, 10) : null;
+	const digits = str.replace(/[\s,.'’]/g, "");
+	return /^[+-]?\d+$/.test(digits) ? Number(digits) : null;
 }
 
 /**
@@ -98,6 +97,15 @@ function top10Value(snapshot, label) {
 	return item ? cleanSmartNum(item.val) : null;
 }
 
+function isTravianOrigin(value) {
+	try {
+		const url = new URL(value);
+		return url.origin === value && /^https?:$/.test(url.protocol) &&
+			/\.travian\.(com|org|net|us|de)$/.test(url.hostname) &&
+			!url.hostname.startsWith("forum.") && !url.hostname.startsWith("lobby.");
+	} catch { return false; }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    §2  HTML → DATA EXTRACTORS
    ═══════════════════════════════════════════════════════════════════════ */
@@ -121,9 +129,18 @@ function extractReactData(html) {
 
 		// Brace-match to find the full JSON object
 		let depth = 0;
+		let inString = false;
+		let escaped = false;
 		let jsonEnd = -1;
 		const jsonStart = cursor;
 		for (let i = cursor; i < html.length; i++) {
+			if (inString) {
+				if (escaped) escaped = false;
+				else if (html[i] === "\\") escaped = true;
+				else if (html[i] === '"') inString = false;
+				continue;
+			}
+			if (html[i] === '"') { inString = true; continue; }
 			if (html[i] === "{") depth++;
 			else if (html[i] === "}") depth--;
 			if (depth === 0) {
@@ -148,8 +165,10 @@ function extractReactData(html) {
 			res.rankProd = rr.rankDaily?.server ?? null;
 			res.rankProdSoFar = rr.rank?.server ?? null;
 			const p = rr.production?.perDay;
-			if (p)
+			if (p) {
 				res.pointsProd = (p.r1 || 0) + (p.r2 || 0) + (p.r3 || 0) + (p.r4 || 0);
+				res.valProd = Math.round(res.pointsProd / 24);
+			}
 			if (rr.positive?.sum !== undefined) {
 				res.valProdSoFar = rr.positive.sum;
 			}
@@ -227,7 +246,7 @@ function extractReactData(html) {
  * @param {string} html - Full page HTML.
  * @returns {Object} Parsed data with a `foundTop10` flag.
  */
-function parseStatsRobust(html) {
+function parseStatsRobust(html, weekly = false, overview = false) {
 	const res = { foundTop10: false, top10List: [] };
 	if (typeof DOMParser === "undefined") return res;
 
@@ -276,7 +295,7 @@ function parseStatsRobust(html) {
 	}
 
 	// Fallback: first table might have val in a different column
-	if (!res.valPop && tables[0]) {
+	if (overview && res.valPop == null && tables.length === 1) {
 		const own =
 			tables[0].querySelector("tr.own") || tables[0].querySelector("tr.hl");
 		if (own) {
@@ -284,7 +303,7 @@ function parseStatsRobust(html) {
 				own.querySelector(".val.lc")?.innerText ||
 					own.querySelector(".val")?.innerText,
 			);
-			if (v) res.valPop = v;
+			if (v != null) res.valPop = v;
 		}
 	}
 
@@ -305,7 +324,7 @@ function parseStatsRobust(html) {
 		return null;
 	};
 
-	if (tables.length > 0) {
+	if (weekly && (tables.length === 4 || tables.length === 5)) {
 		// Table index varies: 4-table layout vs 5-table layout
 		const offset = tables.length === 4 ? 0 : 1;
 		const slots = [
@@ -361,6 +380,7 @@ async function fetchTop10(serverOrigin) {
 		const text = await res.text();
 		const doc = new DOMParser().parseFromString(text, "text/html");
 		const tables = doc.querySelectorAll("table");
+		if (tables.length !== 4 && tables.length !== 5) return result;
 
 		const extract = (table, label) => {
 			if (!table) return null;
@@ -424,6 +444,7 @@ function parseTravianDate(text) {
 	if (!timeM) return null;
 	const h = parseInt(timeM[1], 10);
 	const min = parseInt(timeM[2], 10);
+	if (h > 23 || min > 59) return null;
 
 	const lower = text.toLowerCase();
 	const d = new Date();
@@ -440,7 +461,9 @@ function parseTravianDate(text) {
 	const mm = parseInt(dateM[2], 10);
 	let yy = parseInt(dateM[3], 10);
 	if (yy < 100) yy += 2000;
-	return new Date(yy, mm - 1, dd, h, min, 0, 0).getTime();
+	const date = new Date(yy, mm - 1, dd, h, min, 0, 0);
+	return date.getFullYear() === yy && date.getMonth() === mm - 1 && date.getDate() === dd
+		? date.getTime() : null;
 }
 
 /**
@@ -482,7 +505,8 @@ async function fetchGameStart(serverOrigin, api) {
 		if (lastPage > 1) {
 			// Human-like pause before "clicking" through to the last page
 			await new Promise((r) => setTimeout(r, 400 + Math.random() * 700));
-			doc = (await loadPage(lastPage)) || doc;
+			doc = await loadPage(lastPage);
+			if (!doc) return null; // Never cache a newer page as the account start.
 		}
 
 		// Oldest system message = last support row (fallback: match sender name).
@@ -537,13 +561,38 @@ async function storeHistory(api, storageKey, hist) {
  * @returns {Promise<Array>} Updated history array.
  */
 async function saveToHistory(current, api, storageKey) {
+	return navigator.locks.request("rank-tracker-storage", () => saveSnapshot(current, api, storageKey));
+}
+
+async function saveSnapshot(current, api, storageKey) {
 	if (!storageKey) return [];
+	const latest = current;
+	const latestKey = storageKey.replace(/^history_/, "latest_");
+	// Background workers cannot parse weekly tables. Do not record carried
+	// weekly values as fresh observations at the new general-stat timestamp.
+	if (current.weeklyTimestamp != null && current.weeklyTimestamp !== current.timestamp) {
+		current = { ...current };
+		delete current.top10;
+		for (const key of WEEKLY_KEYS) delete current[key];
+	}
 
 	// Derive the never-trimmed playtime anchor key from `history_{origin}`,
 	// and read it alongside the history in a single storage round-trip.
 	const firstSeenKey = `firstSeen_${storageKey.slice("history_".length)}`;
-	const res = await api.storage.local.get([storageKey, firstSeenKey]);
+	const res = await api.storage.local.get([storageKey, firstSeenKey, latestKey]);
 	const hist = res[storageKey] || [];
+	// A slower request must not overwrite a newer completed observation.
+	if (res[latestKey]?.timestamp > latest.timestamp) return hist;
+	// A general-only fetch can start before a popup publishes fresh weekly data.
+	// Preserve that newer weekly observation rather than restoring its old cache.
+	if (res[latestKey]?.weeklyTimestamp > (latest.weeklyTimestamp ?? 0)) {
+		latest.top10 = res[latestKey].top10;
+		latest.weeklyTimestamp = res[latestKey].weeklyTimestamp;
+		for (const key of WEEKLY_KEYS) {
+			delete latest[key];
+			if (res[latestKey][key] != null) latest[key] = res[latestKey][key];
+		}
+	}
 
 	const lastTs = hist.length > 0 ? hist[hist.length - 1].timestamp : 0;
 	const last = hist[hist.length - 1];
@@ -559,7 +608,9 @@ async function saveToHistory(current, api, storageKey) {
 	// could hide the drop entirely when the new counter catches up quickly.
 	const counterReset = hasReset(last, current) ||
 		(hist.length > 1 && hasReset(hist[hist.length - 2], last));
-	if (hist.length > 0 && Date.now() - lastTs < DEDUP_WINDOW_MS && !counterReset) {
+	const weeklyBoundary = !!last?.top10?.length !== !!current.top10?.length ||
+		(hist.length > 1 && !!hist[hist.length - 2].top10?.length !== !!last?.top10?.length);
+	if (hist.length > 0 && Date.now() - lastTs < DEDUP_WINDOW_MS && !counterReset && !weeklyBoundary) {
 		hist[hist.length - 1] = current; // overwrite recent entry
 	} else {
 		hist.push(current);
@@ -576,7 +627,8 @@ async function saveToHistory(current, api, storageKey) {
 		await api.storage.local.set({ [firstSeenKey]: anchor });
 	}
 
-	await storeHistory(api, storageKey, hist);
+	await api.storage.local.set({ [storageKey]: hist, [latestKey]: latest });
+	await api.storage.local.remove(storageKey.replace(/^history_/, "raidIncome_"));
 	return hist;
 }
 
@@ -632,6 +684,7 @@ async function processHtmlData(
 	serverOrigin,
 	storageKey,
 	returnOnly = false,
+	weekly = false,
 ) {
 	const latestKey = `latest_${serverOrigin}`;
 
@@ -642,13 +695,17 @@ async function processHtmlData(
 		storageRes[latestKey] ||
 		(history.length > 0 ? history[history.length - 1] : { top10: [] });
 
-	const merged = { ...lastData, timestamp: Date.now() };
+	const merged = {
+		...lastData, timestamp: Date.now(),
+		weeklyTimestamp: lastData.weeklyTimestamp ?? lastData.timestamp ?? null,
+	};
 
 	// Layer 1: React hydration data (no DOM needed)
 	const reactFields = [
 		"rankPop",
 		"rankProd",
 		"pointsProd",
+		"valProd",
 		"rankCp",
 		"cpProd",
 		"rankDef",
@@ -677,14 +734,22 @@ async function processHtmlData(
 		"pointsOff",
 		"valPop",
 	];
-	const scannedData = parseStatsRobust(html);
+	const scannedData = parseStatsRobust(html, weekly);
+	if (!Object.values(jsonData || {}).some(Number.isFinite) &&
+		!domFields.some((key) => Number.isFinite(scannedData[key])) && !scannedData.foundTop10) {
+		throw new Error("No statistics found in the page");
+	}
 	// Only fill gaps — don't overwrite values already set by React data
 	for (const k of domFields) {
-		if (merged[k] == null && scannedData[k] != null) merged[k] = scannedData[k];
+		if (jsonData?.[k] == null && scannedData[k] != null) merged[k] = scannedData[k];
 	}
-	if (scannedData.valPop) merged.valPop = scannedData.valPop; // always prefer fresh pop
+	if (scannedData.valPop != null) merged.valPop = scannedData.valPop;
 
-	if (scannedData.foundTop10) merged.top10 = scannedData.top10List;
+	if (scannedData.foundTop10) {
+		for (const key of WEEKLY_KEYS) delete merged[key];
+		merged.top10 = scannedData.top10List;
+		merged.weeklyTimestamp = merged.timestamp;
+	}
 	mergeFields(merged, scannedData, WEEKLY_KEYS);
 
 	if (returnOnly) return merged;
@@ -692,16 +757,20 @@ async function processHtmlData(
 	// Layer 3: Dedicated Top-10 fetch when DOM didn't find the tables
 	if (!scannedData.foundTop10) {
 		const top10Data = await fetchTop10(serverOrigin);
-		if (top10Data.top10.length > 0) merged.top10 = top10Data.top10;
+		if (top10Data.top10.length > 0) {
+			for (const key of WEEKLY_KEYS) delete merged[key];
+			merged.top10 = top10Data.top10;
+			merged.weeklyTimestamp = merged.timestamp;
+		}
 		mergeFields(merged, top10Data, WEEKLY_KEYS);
 	}
 
 	// Persist
 	const newHistory = await saveToHistory(merged, api, storageKey);
-	await api.storage.local.set({ [latestKey]: merged });
+	const saved = (await api.storage.local.get(latestKey))[latestKey] || merged;
 
-	if (typeof renderUI === "function") renderUI(merged, newHistory);
-	return merged;
+	if (typeof renderUI === "function") renderUI(saved, newHistory);
+	return saved;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -728,6 +797,7 @@ async function processHtmlData(
  *          `status` is one of: "ok", "logged_out", "fetch_error", "empty"
  */
 async function fetchAllEndpoints(serverOrigin, api, storageKey, options = {}) {
+	if (!isTravianOrigin(serverOrigin)) return { data: null, status: "fetch_error" };
 	const { saveToHistory: shouldSave = true } = options;
 	const latestKey = `latest_${serverOrigin}`;
 	const statusKey = `lastFetchStatus_${serverOrigin}`;
@@ -769,7 +839,7 @@ async function fetchAllEndpoints(serverOrigin, api, storageKey, options = {}) {
 			});
 			if (ovRes.ok) {
 				const ovText = await ovRes.text();
-				const ovData = parseStatsRobust(ovText);
+				const ovData = parseStatsRobust(ovText, false, true);
 				if (ovData.valPop) mergedData.valPop = ovData.valPop;
 				if (ovData.rankPop) mergedData.rankPop = ovData.rankPop;
 			}
@@ -795,14 +865,20 @@ async function fetchAllEndpoints(serverOrigin, api, storageKey, options = {}) {
 
 		// Step 4: Top 10
 		const top10Data = await fetchTop10(serverOrigin);
-		if (top10Data.top10.length > 0) mergedData.top10 = top10Data.top10;
+		if (top10Data.top10.length > 0) {
+			for (const key of WEEKLY_KEYS) delete mergedData[key];
+			mergedData.top10 = top10Data.top10;
+			mergedData.weeklyTimestamp = mergedData.timestamp;
+		}
 		mergeFields(mergedData, top10Data, WEEKLY_KEYS);
 
 		// Persist
 		if (shouldSave) {
 			await saveToHistory(mergedData, api, storageKey);
+			mergedData = (await api.storage.local.get(latestKey))[latestKey] || mergedData;
+		} else {
+			await api.storage.local.set({ [latestKey]: mergedData });
 		}
-		await api.storage.local.set({ [latestKey]: mergedData });
 		await setStatus(true, "ok");
 
 		return { data: mergedData, status: "ok" };
@@ -846,7 +922,7 @@ const RANK_TIERS = [
  * @returns {{color: string, tier: string, isTop10: boolean, isImmortal: boolean}}
  */
 function getRankTier(rank, totalPlayers) {
-	if (rank == null || !totalPlayers || totalPlayers <= 0) {
+	if (!Number.isFinite(rank) || rank <= 0 || !Number.isFinite(totalPlayers) || totalPlayers <= 0) {
 		return { color: "#dddddd", tier: "unknown", isTop10: false, isImmortal: false };
 	}
 

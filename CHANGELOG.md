@@ -1,5 +1,16 @@
 # Changelog
 
+## Rank Tracker 4.8.2 — 2026-10-05
+
+- Preserve reset boundaries when opening the popup; save direct page observations to history.
+- Separate fresh weekly observations from cached background values; rates skip missing observations.
+- Serialize snapshot/restore writes; reject older completed fetches and pin each popup to its server.
+- Validate backups before writing, retain existing storage if the write fails, sort imported history, and discard derived income caches. Restore is available before login or network collection.
+- Fix accidental filter handlers, repeated group handlers, stale chart loads, invalid zoom ranges, and excessive interpolation across history gaps.
+- Reject unrelated statistics tables as population/weekly data, prefer fresh fields over cached values, handle JSON string braces and signed numbers, and reject pages without usable statistics.
+- Correct raid-income averages across missing values and resets; publish the observation timestamp rather than the current page-load time.
+- Refresh hourly production from parsed daily production, display zero general values, correct rank-tier help, and avoid caching a false playtime anchor when the oldest inbox page fails.
+
 ## Rank Tracker 4.8.1 — 2026-10-05
 
 - Fixed reset-related negative value changes in Current comparisons (including since last open) and History tooltip, selection, and velocity calculations.

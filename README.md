@@ -19,7 +19,7 @@ Screenshots use sample data. Unofficial project, unaffiliated with Travian Games
 | [Oasis Finder](#oasis-finder) | 69.3 | Scores nearby oases for hero and troop raids; improves oasis farm-list sorting | `extensions/OasisCalc` |
 | [TravAlarm](#travalarm) | 3.25 | Groups game timers and custom reminders in a floating dashboard | `extensions/travAlarm` |
 | [Travian QoL](#travian-qol) | 1.0 | Farm-list selection, bulk tab opening, report tools, loot calculator, to-do list, and more | `extensions/TravianQoL` |
-| [Rank Tracker](#rank-tracker) | 4.8.1 | Records statistics and shows rankings, deltas, and history graphs | `extensions/TravianRankTracker` |
+| [Rank Tracker](#rank-tracker) | 4.8.2 | Records statistics and shows rankings, deltas, and history graphs | `extensions/TravianRankTracker` |
 | [CP Predictor](#cp-predictor) | 2.3 | Estimates when you will reach the next settlement's culture-point requirement | `extensions/NextSettlementCalc` |
 | [NPC AutoMerchant](#npc-automerchant) | 3.1.0 | Calculates troop resource needs and helps prepare hero resource transfers | `extensions/automerchant` |
 | [InactiveSearch Map Opener](#inactivesearch-map-opener) | 5.1 | Collects filtered inactive targets across pages and opens their Travian map tabs | `extensions/inactiveOpenerV3` |
@@ -109,7 +109,7 @@ The farm-list screenshot uses a sample table with the extension's selection high
 **Usage:**
 
 1. Open a logged-in Travian tab and click the extension icon to register the server and collect statistics.
-2. Use **Current** for rankings and deltas. Check the update status. Background collection runs approximately every 30 minutes while the browser and session are available.
+2. Use **Current** for rankings and deltas. Check the update status. Background collection runs approximately every 30 minutes while the browser and session are available. Weekly tables refresh when the popup is opened; hover the weekly section to see its observation time. Cached weekly values are not recorded as new history.
 3. Use **History** to select metrics, compare points, and zoom. **Daily Peaks** aggregates observations; **Velocity** shows change per hour. Weekly statistics reset; value deltas and hourly rates bridge observed resets rather than reporting the old total as a loss. Gains during missing observations cannot be recovered.
 4. Use the save icon to export data. The folder icon imports a backup and writes saved tracker data; export existing data before importing.
 
